@@ -4,7 +4,7 @@
 
 ```html
 <div id="yosegaki"></div>
-<script src="https://c.doany.io/embed.js"></script>
+<script src="https://yk.doany.io/embed.js"></script>
 ```
 
 これだけで動く。アカウントは要らず、名前だけで書ける。返信・いいね・Markdown・プレビュー・本人による編集と削除・メール通知・承認待ち。
@@ -103,7 +103,7 @@ prune: true
 selfHeal: true
 ```
 
-先に Infisical の `/yosegaki/yosegaki-secrets` に `admin-password` `secret` `smtp-password` を入れ、DNS に `c.doany.io` を向けておく。
+先に Infisical の `/yosegaki/yosegaki-secrets` に `admin-password` `secret` `smtp-password` を入れ、DNS に `yk.doany.io` を向けておく。
 
 ## API
 
