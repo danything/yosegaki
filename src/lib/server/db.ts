@@ -1,5 +1,6 @@
 import type { Database as DatabaseType } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname } from "node:path";
 import { env } from "./env";
 
@@ -7,7 +8,11 @@ let instance: DatabaseType | undefined;
 
 export function db(): DatabaseType {
 	if (instance) return instance;
-	const { Database } = require("bun:sqlite") as typeof import("bun:sqlite");
+	// 静的 import にすると node で動く vite build がここで転ぶ。実行時 (bun) にだけ
+	// 読む。Vite の dev ランナーは ESM なので素の require は無く、作って使う
+	const { Database } = createRequire(import.meta.url)(
+		"bun:sqlite",
+	) as typeof import("bun:sqlite");
 	mkdirSync(dirname(env.dbPath), { recursive: true });
 	instance = new Database(env.dbPath);
 	instance.exec("PRAGMA journal_mode = WAL;");
