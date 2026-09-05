@@ -10,7 +10,7 @@
 /widget-dist/
 
 # イメージに入らないもの。ここを触ってもビルドキャッシュが飛ばないようにする
-/k3s
+/charts
 /.github
 /.claude
 /.vscode

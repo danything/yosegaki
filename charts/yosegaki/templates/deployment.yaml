@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    # 参照している Secret を Infisical operator が同期したら、自動でローリング再起動する
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  replicas: 1
+  # SQLite を 1 つの PVC に持つので、書き手は常に 1 Pod
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      # イメージは bun (uid 1000) で動く。PVC の root は provisioner 次第で root 所有なので fsGroup で書けるようにする
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: yosegaki
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          ports:
+            - containerPort: 3000
+          startupProbe:
+            httpGet: { path: /api/v1/health, port: 3000 }
+            periodSeconds: 2
+            failureThreshold: 30
+          readinessProbe:
+            httpGet: { path: /api/v1/health, port: 3000 }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /api/v1/health, port: 3000 }
+            periodSeconds: 10
+            failureThreshold: 6
+          env:
+            - name: PROTOCOL_HEADER
+              value: x-forwarded-proto
+            - name: HOST_HEADER
+              value: x-forwarded-host
+            {{- with .Values.clientIpHeader }}
+            - name: CLIENT_IP_HEADER
+              value: {{ . | quote }}
+            {{- end }}
+            - name: SITE_NAME
+              value: {{ .Values.siteName | quote }}
+            - name: ALLOWED_ORIGINS
+              value: {{ join "," .Values.allowedOrigins | quote }}
+            - name: MODERATION
+              value: {{ .Values.moderation | quote }}
+            - name: ADMIN_NAME
+              value: {{ .Values.admin.name | quote }}
+            {{- with .Values.admin.email }}
+            - name: ADMIN_EMAIL
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.turnstile.siteKey }}
+            - name: TURNSTILE_SITE_KEY
+              value: {{ . | quote }}
+            - name: TURNSTILE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.existingSecret }}
+                  key: turnstile-secret
+                  optional: true
+            {{- end }}
+            {{- with .Values.smtp.host }}
+            - name: SMTP_HOST
+              value: {{ . | quote }}
+            - name: SMTP_PORT
+              value: {{ $.Values.smtp.port | quote }}
+            - name: SMTP_USER
+              value: {{ $.Values.smtp.user | quote }}
+            - name: SMTP_FROM
+              value: {{ $.Values.smtp.from | default $.Values.smtp.user | quote }}
+            - name: SMTP_SECURE
+              value: {{ $.Values.smtp.secure | quote }}
+            - name: SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.existingSecret }}
+                  key: smtp-password
+                  optional: true
+            {{- end }}
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: admin-password
+            - name: SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: secret
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: db
+              mountPath: /usr/src/app/data
+      volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (printf "%s-db" .Release.Name) }}
+          {{- end }}

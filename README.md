@@ -96,22 +96,33 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 - 投稿者がメールを書いて「返信を受け取る」に印を付けていれば、返信が公開された時点でメール
 - `WEBHOOK_URL` には `comment.created` / `comment.approved` を POST
 
-### k3s
+### k3s (Helm)
 
-`k3s/` にマニフェストがある。danything/bootstrap の ApplicationSet は `k3s/argocd.yaml` を見つけたリポジトリを Application にするので、置けば ArgoCD が拾う。
+チャートは `oci://ghcr.io/danything/charts/yosegaki`。k3s の HelmChart CRD から参照する。
 
 ```yaml
-# k3s/argocd.yaml
-name: yosegaki
-namespace: yosegaki
-sourcePath: k3s
-recurse: false
-autoSync: true
-prune: true
-selfHeal: true
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: yosegaki
+  namespace: kube-system
+spec:
+  chart: oci://ghcr.io/danything/charts/yosegaki
+  version: 0.1.x
+  targetNamespace: blog
+  valuesContent: |-
+    host: yk.doany.io
+    allowedOrigins: [https://doany.io]
+    turnstile:
+      siteKey: 0x...
+    infisicalSecret:
+      enabled: true
+      identityId: ...
+      projectSlug: k3s-cluster
+      path: /yosegaki/yosegaki-secrets
 ```
 
-先に Infisical の `/yosegaki/yosegaki-secrets` に `admin-password` `secret` `smtp-password` `turnstile-secret` を入れ、`k3s/deployment.yaml` の `TURNSTILE_SITE_KEY` を埋め、DNS に `yk.doany.io` を向けておく。
+`values.yaml` に全部書いてある。秘密は `existingSecret` (既定 `yosegaki-secrets`) のキー `admin-password` `secret` `smtp-password` `turnstile-secret` で渡し、Infisical 純正 operator で引くなら `infisicalSecret` を有効にする。PVC には `helm.sh/resource-policy: keep` が付いていて、リリースを消しても DB は残る。
 
 ## API
 
@@ -154,5 +165,5 @@ src/lib/server/   env / db (bun:sqlite) / comments (取得・投稿・削除) / 
 src/routes/api/   エンドポイント。1 ファイル 1 パス
 src/widget/       埋め込み (Svelte 5)。main.ts が入口、store.svelte.ts が状態、widget.css が同梱スタイル
 widget-dist/      vite.widget.config.ts で作る生成物 (git には入れない)。routes/embed.js が配る
-k3s/              Deployment / Service / Ingress / PVC / InfisicalSecret
+charts/yosegaki/  Helm チャート。CI が OCI で ghcr に push する
 ```

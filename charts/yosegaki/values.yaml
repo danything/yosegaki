@@ -1,0 +1,69 @@
+image:
+  repository: ghcr.io/danything/yosegaki
+  # 省略時は Chart の appVersion (= ビルドしたコミット SHA)
+  tag: ""
+
+# 公開するホスト名。空なら Ingress を作らない
+host: ""
+ingress:
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls.certresolver: mydnschallenge
+  tls: true
+
+# 埋め込みを許すオリジン。本番では必ず書く (空なら何でも許可)
+allowedOrigins: []
+siteName: yosegaki
+# none: 承認なしで公開 / links: リンクが多いものだけ承認待ち / all: 全部承認待ち
+moderation: none
+admin:
+  name: admin
+  # 新着のメールを受け取る。空なら送らない
+  email: ""
+# Cloudflare Turnstile の site key (公開値)。secret は existingSecret の turnstile-secret
+turnstile:
+  siteKey: ""
+smtp:
+  host: ""
+  port: 587
+  user: ""
+  from: ""
+  secure: false
+# 接続元 IP を取るヘッダ。Cloudflare 配下なら CF-Connecting-IP
+clientIpHeader: CF-Connecting-IP
+# そのまま container.env に足す (name/value の配列)。README の環境変数表を参照
+extraEnv: []
+
+# 秘密を持つ Secret。キー: admin-password, secret, smtp-password, turnstile-secret
+# (smtp-password と turnstile-secret は無くてもよい)
+existingSecret: yosegaki-secrets
+
+# Secret を Infisical 純正 operator で引く場合。無効なら existingSecret を別の手段で用意する
+infisicalSecret:
+  enabled: false
+  hostAPI: http://infisical.infisical.svc:8080/api
+  identityId: ""
+  serviceAccount:
+    name: infisical-auth
+    namespace: infisical
+  projectSlug: ""
+  envSlug: prod
+  # Infisical 側のフォルダ。中のシークレット名がそのまま Secret のキーになる
+  path: ""            # 例: /yosegaki/yosegaki-secrets
+
+# SQLite の置き場
+persistence:
+  enabled: true
+  size: 1Gi
+  # 空なら既定の StorageClass
+  storageClass: ""
+  # 既存の PVC を使うならその名前
+  existingClaim: ""
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi

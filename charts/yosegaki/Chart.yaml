@@ -1,0 +1,12 @@
+apiVersion: v2
+name: yosegaki
+description: >-
+  寄せ書き。SvelteKit + Bun + SQLite のコメントサーバ。管理画面なし、どのコメント欄からでも
+  サイト全体の新着と自分宛ての返信が見える。
+type: application
+# version / appVersion は CI が上書きする (helm package --version/--app-version)
+version: 0.1.0
+appVersion: dev
+home: https://github.com/danything/yosegaki
+sources:
+  - https://github.com/danything/yosegaki
