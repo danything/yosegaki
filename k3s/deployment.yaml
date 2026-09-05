@@ -23,7 +23,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: yosegaki
-          image: ghcr.io/danything/yosegaki:33e19197cb506771d8ba83e9181b79e73475a491
+          image: ghcr.io/danything/yosegaki:b6d3cba82558499fbd72291e06f825aaf5098bf0
           ports:
             - containerPort: 3000
           startupProbe:
