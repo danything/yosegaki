@@ -22,23 +22,26 @@ const tabs = $derived<Tab[]>(
 		: ["recent", "replies", "mine"],
 );
 
+// 切り替え中も前の一覧を残す。空にしてから取りに行くと高さが伸縮して
+// 下のコメント欄が跳ねる
 async function open(next: Tab, more = false) {
 	if (!more) {
 		tab = next;
-		items = [];
 		nextBefore = null;
 	}
 	loading = true;
 	error = "";
 	try {
 		const r = await store.feed(next, more ? nextBefore : null);
+		// 待っている間に別のタブへ移っていたら捨てる
+		if (tab !== next) return;
 		items = more ? [...items, ...r.comments] : r.comments;
 		nextBefore = r.comments.length === 20 ? r.next_before : null;
 		if (next === "replies") store.markSeen();
 	} catch (e) {
-		error = store.message(e);
+		if (tab === next) error = store.message(e);
 	} finally {
-		loading = false;
+		if (tab === next) loading = false;
 	}
 }
 
@@ -110,7 +113,7 @@ async function login(ev: Event) {
 		{/each}
 	</div>
 	{#if error}<p class="ysg-error">{error}</p>{/if}
-	<ul class="ysg-feed">
+	<ul class="ysg-feed" class:ysg-loading={loading} aria-busy={loading}>
 		{#each items as c (c.id)}
 			<li class="ysg-feed-item" class:ysg-pending={c.status === "pending"}>
 				{#if c.avatar}<img class="ysg-avatar ysg-avatar-sm" src={c.avatar} alt="" loading="lazy" width="28" height="28" />{/if}

@@ -420,12 +420,34 @@ a.ysg-name:hover {
 .ysg-tab.ysg-active {
 	opacity: 1;
 }
+/* クリックで残る既定のフォーカス枠は消し、キーボード操作のときだけ出す */
+.ysg-tab:focus:not(:focus-visible) {
+	outline: none;
+}
+.ysg-tab:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--_accent) 50%, transparent);
+	outline-offset: -2px;
+	border-radius: var(--_radius);
+}
 .ysg-tab.ysg-active {
 	border-bottom-color: var(--_accent);
 }
 .ysg-feed {
+	/* タブを切り替えても高さが跳ねないよう、空でも一定の高さを保つ */
+	min-height: 8rem;
 	max-height: 24rem;
 	overflow-y: auto;
+	transition: opacity 0.15s;
+}
+.ysg-feed.ysg-loading {
+	opacity: 0.5;
+}
+.ysg-feed .ysg-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 8rem;
+	padding: 0;
 }
 .ysg-feed-item {
 	display: flex;
