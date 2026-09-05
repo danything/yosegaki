@@ -35,8 +35,9 @@ clientIpHeader: CF-Connecting-IP
 # そのまま container.env に足す (name/value の配列)。README の環境変数表を参照
 extraEnv: []
 
-# 秘密を持つ Secret。キー: admin-password, secret, smtp-password, turnstile-secret
-# (smtp-password と turnstile-secret は無くてもよい)
+# 秘密を持つ Secret。キー: admin-password, secret, smtp-password, turnstile-secret。
+# どれも無くても起動はする (admin-password が無いと管理機能が無効、secret が無いと
+# 再起動で管理者がログアウトする)
 existingSecret: yosegaki-secrets
 
 # Secret を Infisical 純正 operator で引く場合。無効なら existingSecret を別の手段で用意する

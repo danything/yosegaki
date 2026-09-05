@@ -88,16 +88,21 @@ spec:
                   key: smtp-password
                   optional: true
             {{- end }}
+            # どちらも無くても起動する。admin-password が無ければ管理機能ごと無効、
+            # secret が無ければ起動ごとの乱数 (再起動で管理者がログアウトする)。
+            # Secret が揃うと auto-reload で入れ替わる
             - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.existingSecret }}
                   key: admin-password
+                  optional: true
             - name: SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.existingSecret }}
                   key: secret
+                  optional: true
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
