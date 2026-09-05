@@ -13,7 +13,6 @@ services:
     environment:
       - PROTOCOL_HEADER=x-forwarded-proto
       - HOST_HEADER=x-forwarded-host
-      - ADMIN_PASSWORD=admin
       - ADMIN_NAME=admin
     labels:
       caddy: yosegaki.localhost

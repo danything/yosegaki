@@ -13,7 +13,6 @@ let items = $state<Comment[]>([]);
 let nextBefore = $state<number | null>(null);
 let loading = $state(false);
 let error = $state("");
-let password = $state("");
 let loginError = $state("");
 
 const tabs = $derived<Tab[]>(
@@ -90,14 +89,17 @@ async function del(c: Comment) {
 	}
 }
 
-async function login(ev: Event) {
-	ev.preventDefault();
+let oidcBusy = $state(false);
+
+async function login() {
 	loginError = "";
+	oidcBusy = true;
 	try {
-		await store.login(password);
-		password = "";
+		await store.loginOidc();
 	} catch (e) {
-		loginError = store.message(e);
+		loginError = e instanceof Error && e.message ? e.message : store.message(e);
+	} finally {
+		oidcBusy = false;
 	}
 }
 </script>
@@ -147,11 +149,12 @@ async function login(ev: Event) {
 				<span class="ysg-muted">{t.loginAs(store.admin.name)}</span>
 				<button type="button" class="ysg-act" onclick={() => store.logout()}>{t.logout}</button>
 			{:else}
-				<form class="ysg-login" onsubmit={login}>
-					<input class="ysg-input" type="password" placeholder={t.password} autocomplete="current-password" bind:value={password} />
-					<button type="submit" class="ysg-btn" disabled={!password}>{t.login}</button>
+				<div class="ysg-login">
+					<button type="button" class="ysg-btn" disabled={oidcBusy} onclick={login}>
+						{t.loginWith(store.config.oidc_label)}
+					</button>
 					{#if loginError}<span class="ysg-error">{loginError}</span>{/if}
-				</form>
+				</div>
 			{/if}
 		</div>
 	{/if}

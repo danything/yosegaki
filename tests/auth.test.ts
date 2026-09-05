@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-process.env.ADMIN_PASSWORD = "pw";
 process.env.SECRET = "test-secret";
 
-const { checkAdminPassword, issueAdminToken, verifyAdminToken, visitorHash } =
-	await import("../src/lib/server/auth");
+const { issueAdminToken, verifyAdminToken, visitorHash } = await import(
+	"../src/lib/server/auth"
+);
 
 describe("admin token", () => {
 	test("発行したものは通る", () => {
@@ -24,14 +24,6 @@ describe("admin token", () => {
 		const { token } = issueAdminToken();
 		const sig = token.split(".")[1];
 		expect(verifyAdminToken(`${Date.now() - 1000}.${sig}`)).toBe(false);
-	});
-});
-
-describe("password", () => {
-	test("一致だけ通る", () => {
-		expect(checkAdminPassword("pw")).toBe(true);
-		expect(checkAdminPassword("pw ")).toBe(false);
-		expect(checkAdminPassword("")).toBe(false);
 	});
 });
 

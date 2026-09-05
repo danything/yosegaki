@@ -25,15 +25,3 @@ export function decideStatus(
 		return "pending";
 	return "approved";
 }
-
-const attempts = new Map<string, number[]>();
-
-/** 管理者ログインの総当たり対策。IP ごとに 10 分で 5 回 */
-export function loginAllowed(ipHash: string): boolean {
-	const now = Date.now();
-	const list = (attempts.get(ipHash) ?? []).filter((t) => now - t < 600_000);
-	list.push(now);
-	attempts.set(ipHash, list);
-	if (attempts.size > 10_000) attempts.clear();
-	return list.length <= 5;
-}

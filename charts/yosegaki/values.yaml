@@ -21,6 +21,15 @@ admin:
   name: admin
   # 新着のメールを受け取る。空なら送らない
   email: ""
+# 管理者は OIDC でだけログインできる。clientSecret は existingSecret の oidc-client-secret。
+# adminGroups は groups / roles クレームに含まれる値 (Entra ならグループの Object ID)、
+# admins は email / preferred_username / sub。どちらも空なら誰も通らない
+oidc:
+  issuer: ""          # 例: https://login.microsoftonline.com/<tenant>/v2.0
+  clientId: ""
+  adminGroups: []
+  admins: []
+  label: SSO          # ボタンの表示 (「〜 でログイン」)
 # Cloudflare Turnstile の site key (公開値)。secret は existingSecret の turnstile-secret
 turnstile:
   siteKey: ""
@@ -35,8 +44,8 @@ clientIpHeader: CF-Connecting-IP
 # そのまま container.env に足す (name/value の配列)。README の環境変数表を参照
 extraEnv: []
 
-# 秘密を持つ Secret。キー: admin-password, secret, smtp-password, turnstile-secret。
-# どれも無くても起動はする (admin-password が無いと管理機能が無効、secret が無いと
+# 秘密を持つ Secret。キー: secret, oidc-client-secret, smtp-password, turnstile-secret。
+# どれも無くても起動はする (oidc-client-secret が無いと管理機能が無効、secret が無いと
 # 再起動で管理者がログアウトする)
 existingSecret: yosegaki-secrets
 

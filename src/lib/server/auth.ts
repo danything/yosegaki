@@ -43,16 +43,11 @@ export function issueAdminToken(): { token: string; expires_at: string } {
 }
 
 export function verifyAdminToken(token: string | null): boolean {
-	if (!token || !env.adminPassword) return false;
+	if (!token) return false;
 	const dot = token.indexOf(".");
 	if (dot < 0) return false;
 	const payload = token.slice(0, dot);
 	const sig = token.slice(dot + 1);
 	if (!/^\d+$/.test(payload) || Number(payload) < Date.now()) return false;
 	return safeEqual(sig, sign(`admin:${payload}`));
-}
-
-export function checkAdminPassword(password: string): boolean {
-	if (!env.adminPassword) return false;
-	return safeEqual(password, env.adminPassword);
 }

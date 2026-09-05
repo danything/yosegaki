@@ -35,8 +35,7 @@ export const env = {
 	allowedOrigins: list("ALLOWED_ORIGINS"),
 	/** メールの件名などに使う */
 	siteName: process.env.SITE_NAME ?? "yosegaki",
-	/** 管理者。パスワードが無ければ管理機能ごと無効 */
-	adminPassword: process.env.ADMIN_PASSWORD ?? "",
+	/** 管理者の表示名と、新着を受け取るメール */
 	adminName: process.env.ADMIN_NAME ?? "admin",
 	adminEmail: process.env.ADMIN_EMAIL ?? "",
 	/** トークン署名と IP ハッシュの鍵。無ければ起動ごとに乱数 (再起動でログアウトする) */
@@ -68,6 +67,19 @@ export const env = {
 		pass: process.env.SMTP_PASS ?? "",
 		from: process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "",
 		secure: process.env.SMTP_SECURE === "true",
+	},
+	/**
+	 * 管理者は OIDC でだけログインできる。issuer / clientId / clientSecret が揃うと有効。
+	 * 誰を通すかは adminGroups (groups / roles クレームに含まれる値) か
+	 * admins (email / preferred_username / sub)。どちらも空なら誰も通らない
+	 */
+	oidc: {
+		issuer: (process.env.OIDC_ISSUER ?? "").replace(/\/$/, ""),
+		clientId: process.env.OIDC_CLIENT_ID ?? "",
+		clientSecret: process.env.OIDC_CLIENT_SECRET ?? "",
+		admins: list("OIDC_ADMINS"),
+		adminGroups: list("OIDC_ADMIN_GROUPS"),
+		label: process.env.OIDC_LABEL ?? "SSO",
 	},
 	/** Cloudflare Turnstile。両方あるときだけ投稿に人間の確認を挟む */
 	turnstile: {

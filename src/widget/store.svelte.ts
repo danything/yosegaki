@@ -246,10 +246,40 @@ export class Store {
 		return r.comment;
 	}
 
-	async login(password: string): Promise<void> {
-		const r = await this.api.post<{ token: string; name: string }>(
-			"/admin/login",
-			{ password },
+	/** ポップアップで OIDC。戻ってきた callback ページが postMessage でトークンを寄越す */
+	async loginOidc(): Promise<void> {
+		const server = this.api.server;
+		const url = `${server}/admin/login?origin=${encodeURIComponent(location.origin)}`;
+		const popup = window.open(
+			url,
+			"yosegaki-login",
+			"popup,width=520,height=680",
+		);
+		if (!popup) {
+			// ブロックされたら同じタブで行く。戻り先は無いのでユーザーが戻る
+			location.href = url;
+			return;
+		}
+		const r = await new Promise<{ token: string; name: string }>(
+			(resolve, reject) => {
+				const onMessage = (ev: MessageEvent) => {
+					if (ev.origin !== server || ev.data?.type !== "yosegaki:admin")
+						return;
+					cleanup();
+					resolve(ev.data);
+				};
+				const timer = setInterval(() => {
+					if (popup.closed) {
+						cleanup();
+						reject(new Error(this.t.loginClosed));
+					}
+				}, 500);
+				const cleanup = () => {
+					window.removeEventListener("message", onMessage);
+					clearInterval(timer);
+				};
+				window.addEventListener("message", onMessage);
+			},
 		);
 		this.api.token = r.token;
 		save("admin", r.token);

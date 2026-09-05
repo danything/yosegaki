@@ -12,7 +12,7 @@
 ## 考え方
 
 - **スタイルを押し付けない**: 描画は埋め込み先の DOM に直接行い、色は埋め込み先の文字色を薄めて使う。ライト/ダークの切り替えは何もしなくて追従する。`--ysg-accent` などの変数で寄せられるし、`data-css="false"` で同梱 CSS を丸ごと捨てて自分で書いてもいい。クラスは全部 `ysg-` 始まり
-- **管理画面を作らない**: 管理者ログインはコメント欄の「通知」の中にある。ログインすると、その場で承認・削除ができ、承認待ちタブが増える。荒らしの掃除に別のページは要らない
+- **管理画面を作らない**: 管理者ログインはコメント欄の「通知」の中にある。パスワードは持たず OIDC (Entra ID など) だけで、ログインすると、その場で承認・削除ができ、承認待ちタブが増える。荒らしの掃除に別のページは要らない
 - **API は UI と独立**: `/api/v1` は JSON だけ返す。埋め込みスクリプトはその一利用者に過ぎず、自分で画面を作るならそのまま叩ける
 - **1 プロセス 1 ファイル**: SQLite (WAL) を 1 つ持つだけ。バックアップはファイルのコピー
 
@@ -57,14 +57,18 @@ instance.destroy();   // 次の遷移の前に
 ```sh
 docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
   -e ALLOWED_ORIGINS=https://example.com \
-  -e ADMIN_PASSWORD=... -e SECRET=... \
+  -e SECRET=... \
+  -e OIDC_ISSUER=... -e OIDC_CLIENT_ID=... -e OIDC_CLIENT_SECRET=... -e OIDC_ADMIN_GROUPS=... \
   ghcr.io/danything/yosegaki
 ```
 
 | 環境変数 | 既定 | 意味 |
 |---|---|---|
 | `ALLOWED_ORIGINS` | (全部許可) | 埋め込みを許すオリジン。カンマ区切り。本番では必ず書く |
-| `ADMIN_PASSWORD` | (無効) | 管理者のパスワード。無ければ管理機能ごと消える |
+| `OIDC_ISSUER` / `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` | (無効) | 管理者のログイン。3 つ揃うと有効で、無ければ管理機能ごと消える。redirect URI は `https://<host>/admin/callback` |
+| `OIDC_ADMIN_GROUPS` | (無し) | 管理者にするグループ。`groups` / `roles` クレームに含まれる値のカンマ区切り (Entra ならグループの Object ID) |
+| `OIDC_ADMINS` | (無し) | 管理者にする個人。email / preferred_username / sub のカンマ区切り |
+| `OIDC_LABEL` | `SSO` | ログインボタンの表示 (「〜 でログイン」) |
 | `ADMIN_NAME` / `ADMIN_EMAIL` | `admin` / (無し) | 管理者の表示名と、新着を受け取るメール |
 | `SECRET` | 起動ごとに乱数 | トークン署名と IP ハッシュの鍵。無いと再起動でログアウトする |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET` | (無し) | [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) の鍵。両方あれば投稿に人間の確認を挟む。見た目は必要なときだけ出る |
@@ -87,6 +91,12 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 - **ハニーポット**: 人間に見えない入力欄が埋まっていたら捨てる
 - **レート制限**: 同じ IP から `RATE_LIMIT_WINDOW` 秒に `RATE_LIMIT_MAX` 件まで
 - **承認待ち**: `BLOCK_WORDS` を含むものは常に承認待ち。`MODERATION=links` ならリンクの多いものも
+
+### 管理者の OIDC
+
+自前のパスワード認証は持たない。追従が辛い割に得るものが無いので、Entra ID や Keycloak など OIDC が話せる IdP に任せる。ウィジェットの「〜 でログイン」がポップアップで `/admin/login` を開き、IdP を経て `/admin/callback` に戻る。そこで id_token を検証して `OIDC_ADMIN_GROUPS` / `OIDC_ADMINS` に照らし、通れば管理者トークンを `postMessage` で開いた元のウィンドウに返す。Cookie は使わないので、埋め込み先のドメインが違っても Safari で困らない。
+
+IdP 側では redirect URI に `https://<host>/admin/callback` を登録し、scope `openid profile email` を許す。グループで絞るなら id_token に `groups` クレームを出す設定にして (Entra: トークン構成 → グループ要求を追加)、`OIDC_ADMIN_GROUPS` にグループの Object ID を書く。
 
 本人の識別は端末ごとの乱数 (`X-Visitor`) で、サーバには SHA-256 だけ残る。メールは通知にしか使わず、API には出ない (アバターは gravatar のハッシュ)。IP もハッシュしてレート制限にだけ使う。
 
@@ -115,6 +125,11 @@ spec:
     allowedOrigins: [https://doany.io]
     turnstile:
       siteKey: 0x...
+    oidc:
+      issuer: https://login.microsoftonline.com/<tenant>/v2.0
+      clientId: ...
+      adminGroups: [<グループの Object ID>]
+      label: Microsoft
     infisicalSecret:
       enabled: true
       identityId: ...
@@ -122,7 +137,7 @@ spec:
       path: /yosegaki/yosegaki-secrets
 ```
 
-`values.yaml` に全部書いてある。秘密は `existingSecret` (既定 `yosegaki-secrets`) のキー `admin-password` `secret` `smtp-password` `turnstile-secret` で渡し、Infisical 純正 operator で引くなら `infisicalSecret` を有効にする。PVC には `helm.sh/resource-policy: keep` が付いていて、リリースを消しても DB は残る。
+`values.yaml` に全部書いてある。秘密は `existingSecret` (既定 `yosegaki-secrets`) のキー `secret` `oidc-client-secret` `smtp-password` `turnstile-secret` で渡し、Infisical 純正 operator で引くなら `infisicalSecret` を有効にする。PVC には `helm.sh/resource-policy: keep` が付いていて、リリースを消しても DB は残る。
 
 ## API
 
@@ -141,8 +156,8 @@ spec:
 | GET | `/count?page=a&page=b` | 承認済みの件数 |
 | GET | `/recent?before=&limit=` | サイト全体の新着 |
 | GET | `/me/comments` `/me/replies` | 自分の投稿、自分宛ての返信 |
-| POST | `/admin/login` | `{password}` → `{token, expires_at}` |
 | GET | `/admin/me` `/admin/pending` `/admin/comments?q=&status=` | 管理者の確認、承認待ち、横断検索 |
+| GET | `/admin/login?origin=` `/admin/callback` | (API 外) OIDC の入口と戻り先。ポップアップで使う |
 | POST | `/admin/comments/:id/approve` | 承認 |
 | GET | `/config` `/health` | 公開設定、死活 |
 

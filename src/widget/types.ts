@@ -26,6 +26,8 @@ export interface Comment {
 export interface Config {
 	site_name: string;
 	admin_enabled: boolean;
+	/** 空なら OIDC なし */
+	oidc_label: string;
 	admin_name: string;
 	moderation: "all" | "links" | "none";
 	max_length: number;
