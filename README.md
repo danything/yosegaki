@@ -145,6 +145,6 @@ http://localhost:5173 がデモページで、そのサーバ自身に埋め込�
 src/lib/server/   env / db (bun:sqlite) / comments (取得・投稿・削除) / markdown (marked + sanitize-html) / spam / auth / notify
 src/routes/api/   エンドポイント。1 ファイル 1 パス
 src/widget/       埋め込み (Svelte 5)。main.ts が入口、store.svelte.ts が状態、widget.css が同梱スタイル
-static/embed.js   vite.widget.config.ts で作る生成物 (git には入れない)
+widget-dist/      vite.widget.config.ts で作る生成物 (git には入れない)。routes/embed.js が配る
 k3s/              Deployment / Service / Ingress / PVC / InfisicalSecret
 ```

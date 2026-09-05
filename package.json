@@ -4,9 +4,9 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "bun run build:widget && vite dev",
+		"dev": "bun run build:widget && bun --bun vite dev",
 		"dev:widget": "vite build -c vite.widget.config.ts --watch",
-		"build:widget": "svelte-kit sync && vite build -c vite.widget.config.ts && cp src/widget/widget.css static/widget.css",
+		"build:widget": "svelte-kit sync && vite build -c vite.widget.config.ts",
 		"build": "bun run build:widget && vite build",
 		"start": "bun build/index.js",
 		"test": "bun test",

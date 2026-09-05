@@ -41,10 +41,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.ip = clientIp(event);
 
 	const response = await resolve(event);
-	// 埋め込みスクリプトは記事ごとに読まれる。短めに CDN/ブラウザに持たせる
-	if (event.url.pathname === "/embed.js" || event.url.pathname === "/widget.css") {
-		response.headers.set("cache-control", "public, max-age=300");
-	}
 	if (allowed && event.url.pathname.startsWith("/api/")) {
 		response.headers.set("access-control-allow-origin", origin);
 		response.headers.append("vary", "Origin");

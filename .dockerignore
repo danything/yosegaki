@@ -7,8 +7,7 @@
 *.pem
 *.tsbuildinfo
 .env*
-/static/embed.js
-/static/widget.css
+/widget-dist/
 
 # イメージに入らないもの。ここを触ってもビルドキャッシュが飛ばないようにする
 /k3s

@@ -10,5 +10,4 @@
 /compose.override.yml
 
 # build:widget の生成物。Dockerfile と dev スクリプトが作る
-/static/embed.js
-/static/widget.css
+/widget-dist/

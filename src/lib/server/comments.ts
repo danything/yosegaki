@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { db } from "./db";
 import { env } from "./env";
 import { ApiError } from "./http";
@@ -87,7 +88,8 @@ function avatarUrl(row: CommentRow): string | null {
 	if (env.avatar === "none") return null;
 	// メール無しでも名前から identicon を出す。f=y で gravatar 側の画像は引かない
 	const hash =
-		row.email_hash ?? Bun.hash(row.name).toString(16).padStart(16, "0");
+		row.email_hash ??
+		createHash("sha256").update(row.name).digest("hex").slice(0, 16);
 	const forced = row.email_hash ? "" : "&f=y";
 	return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=80${forced}`;
 }
