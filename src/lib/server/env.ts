@@ -46,8 +46,8 @@ export const env = {
 	/** 接続元 IP を取るヘッダ。Cloudflare 配下なら CF-Connecting-IP */
 	clientIpHeader: process.env.CLIENT_IP_HEADER ?? "",
 
-	/** all: 全部承認待ち / links: リンクが多いものだけ / none: 承認なし */
-	moderation: pick("MODERATION", ["all", "links", "none"] as const, "links"),
+	/** none: 承認なしで公開 / links: リンクが多いものだけ承認待ち / all: 全部承認待ち */
+	moderation: pick("MODERATION", ["all", "links", "none"] as const, "none"),
 	maxLinks: int("MAX_LINKS", 2),
 	/** 含まれていたら承認待ちにする語 */
 	blockWords: list("BLOCK_WORDS"),
@@ -68,6 +68,11 @@ export const env = {
 		pass: process.env.SMTP_PASS ?? "",
 		from: process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "",
 		secure: process.env.SMTP_SECURE === "true",
+	},
+	/** Cloudflare Turnstile。両方あるときだけ投稿に人間の確認を挟む */
+	turnstile: {
+		siteKey: process.env.TURNSTILE_SITE_KEY ?? "",
+		secret: process.env.TURNSTILE_SECRET ?? "",
 	},
 	/** 新着を JSON で POST する先。空なら送らない */
 	webhookUrl: process.env.WEBHOOK_URL ?? "",

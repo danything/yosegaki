@@ -156,7 +156,11 @@ export class Store {
 		save("author", this.author);
 	}
 
-	async post(body: string, parentId: number | null): Promise<Comment> {
+	async post(
+		body: string,
+		parentId: number | null,
+		turnstile?: string,
+	): Promise<Comment> {
 		this.saveAuthor();
 		const r = await this.api.post<{ comment: Comment }>("/comments", {
 			page: this.page,
@@ -168,6 +172,7 @@ export class Store {
 			website: this.author.website,
 			notify: this.author.notify,
 			body,
+			turnstile,
 		});
 		save("posted", true);
 		const c = r.comment;

@@ -163,6 +163,9 @@
 	border: 1px dashed var(--_line);
 	border-radius: var(--_radius);
 }
+.ysg-turnstile:empty {
+	display: none;
+}
 .ysg-error {
 	color: #dc2626;
 	margin: 0.25rem 0;

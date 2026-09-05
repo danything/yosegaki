@@ -14,6 +14,7 @@ import { ApiError, api, body, intParam, json, str } from "$lib/server/http";
 import { render } from "$lib/server/markdown";
 import { onCreated } from "$lib/server/notify";
 import { decideStatus } from "$lib/server/spam";
+import { turnstileEnabled, verifyTurnstile } from "$lib/server/turnstile";
 
 const SORTS: Sort[] = ["newest", "oldest", "popular"];
 
@@ -62,6 +63,8 @@ interface PostBody {
 	notify?: boolean;
 	/** ハニーポット。人間には見えないので埋まっていたら bot */
 	hp?: string;
+	/** Cloudflare Turnstile のトークン */
+	turnstile?: string;
 }
 
 export const POST = api(async (event) => {
@@ -119,6 +122,10 @@ export const POST = api(async (event) => {
 		recentByIp(ip, env.rateLimitWindow) >= env.rateLimitMax
 	) {
 		throw new ApiError(429, "rate_limited", "投稿が多すぎる。しばらく待つ");
+	}
+	// 入力の検証を全部通ってから照会する。トークンは一度しか使えない
+	if (!viewer.admin && turnstileEnabled()) {
+		await verifyTurnstile(data.turnstile, event.locals.ip);
 	}
 
 	const bodyHtml = render(bodyMd);

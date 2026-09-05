@@ -1,7 +1,10 @@
 import { env } from "./env";
 import { countLinks } from "./markdown";
 
-/** 投稿を公開するか承認待ちにするか。管理者は常に公開 */
+/**
+ * 投稿を公開するか承認待ちにするか。管理者は常に公開。
+ * bot の遮断は Turnstile とハニーポットの仕事で、ここは人間の投稿の振り分け。
+ */
 export function decideStatus(
 	opts: { bodyMd: string; bodyHtml: string; admin: boolean },
 	rules: {

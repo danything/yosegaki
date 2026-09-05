@@ -13,5 +13,6 @@ export const GET = api(() => ({
 	avatar: env.avatar,
 	allow_images: env.allowImages,
 	notify_by_email: env.smtp.host !== "",
+	turnstile_site_key: env.turnstile.secret ? env.turnstile.siteKey : "",
 	version,
 }));

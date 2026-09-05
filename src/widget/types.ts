@@ -33,6 +33,8 @@ export interface Config {
 	avatar: "gravatar" | "none";
 	allow_images: boolean;
 	notify_by_email: boolean;
+	/** 空なら Turnstile なし */
+	turnstile_site_key: string;
 	version: string;
 }
 

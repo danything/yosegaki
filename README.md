@@ -7,7 +7,7 @@
 <script src="https://yk.doany.io/embed.js"></script>
 ```
 
-これだけで動く。アカウントは要らず、名前だけで書ける。返信・いいね・Markdown・プレビュー・本人による編集と削除・メール通知・承認待ち。
+これだけで動く。アカウントは要らず、名前だけで書ける。返信・いいね・Markdown・プレビュー・本人による編集と削除・メール通知。既定では承認なしで即公開し、bot は Cloudflare Turnstile とハニーポットで止める。
 
 ## 考え方
 
@@ -67,7 +67,8 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 | `ADMIN_PASSWORD` | (無効) | 管理者のパスワード。無ければ管理機能ごと消える |
 | `ADMIN_NAME` / `ADMIN_EMAIL` | `admin` / (無し) | 管理者の表示名と、新着を受け取るメール |
 | `SECRET` | 起動ごとに乱数 | トークン署名と IP ハッシュの鍵。無いと再起動でログアウトする |
-| `MODERATION` | `links` | `all`: 全部承認待ち / `links`: リンクが `MAX_LINKS` (2) を超えたら / `none` |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET` | (無し) | [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) の鍵。両方あれば投稿に人間の確認を挟む。見た目は必要なときだけ出る |
+| `MODERATION` | `none` | `none`: 承認なしで公開 / `links`: リンクが `MAX_LINKS` (2) を超えたら承認待ち / `all`: 全部承認待ち |
 | `BLOCK_WORDS` | (無し) | 含んでいたら承認待ちにする語。カンマ区切り |
 | `MAX_LENGTH` | `4000` | 本文の上限 |
 | `RATE_LIMIT_MAX` / `RATE_LIMIT_WINDOW` | `5` / `600` | 同じ IP から 600 秒に 5 件まで |
@@ -79,6 +80,13 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 | `WEBHOOK_URL` | (無し) | 新着と承認を JSON で POST する先 |
 | `SITE_NAME` | `yosegaki` | メールの件名 |
 | `DB_PATH` | `data/yosegaki.db` | SQLite の置き場 |
+
+### スパム
+
+- **Turnstile**: `TURNSTILE_SITE_KEY` と `TURNSTILE_SECRET` を入れると、送信のたびにトークンを取ってサーバで照会する。Cloudflare のダッシュボードで Turnstile → ウィジェットを作り、ホスト名に埋め込み先 (doany.io) を登録する。ウィジェットのモードは Managed のままでいい。表示は「必要なときだけ」なので普段は何も出ない
+- **ハニーポット**: 人間に見えない入力欄が埋まっていたら捨てる
+- **レート制限**: 同じ IP から `RATE_LIMIT_WINDOW` 秒に `RATE_LIMIT_MAX` 件まで
+- **承認待ち**: `BLOCK_WORDS` を含むものは常に承認待ち。`MODERATION=links` ならリンクの多いものも
 
 本人の識別は端末ごとの乱数 (`X-Visitor`) で、サーバには SHA-256 だけ残る。メールは通知にしか使わず、API には出ない (アバターは gravatar のハッシュ)。IP もハッシュしてレート制限にだけ使う。
 
@@ -103,7 +111,7 @@ prune: true
 selfHeal: true
 ```
 
-先に Infisical の `/yosegaki/yosegaki-secrets` に `admin-password` `secret` `smtp-password` を入れ、DNS に `yk.doany.io` を向けておく。
+先に Infisical の `/yosegaki/yosegaki-secrets` に `admin-password` `secret` `smtp-password` `turnstile-secret` を入れ、`k3s/deployment.yaml` の `TURNSTILE_SITE_KEY` を埋め、DNS に `yk.doany.io` を向けておく。
 
 ## API
 

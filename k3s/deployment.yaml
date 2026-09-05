@@ -58,8 +58,13 @@ spec:
               value: ruk
             - name: ADMIN_EMAIL
               value: info@doany.io
+            # 承認なしで公開。bot は Turnstile で止める
             - name: MODERATION
-              value: links
+              value: none
+            # Cloudflare ダッシュボード → Turnstile → ウィジェット (doany.io) の site key。
+            # 公開してよい値なのでここに書く。secret は Infisical
+            - name: TURNSTILE_SITE_KEY
+              value: ""
             - name: SMTP_HOST
               value: smtp.office365.com
             - name: SMTP_PORT
@@ -83,6 +88,12 @@ spec:
                 secretKeyRef:
                   name: yosegaki-secrets
                   key: smtp-password
+                  optional: true
+            - name: TURNSTILE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: yosegaki-secrets
+                  key: turnstile-secret
                   optional: true
           volumeMounts:
             - name: db

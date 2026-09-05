@@ -43,6 +43,8 @@ const ja = {
 	previewEmpty: "(何も書かれていません)",
 	tooLong: (n: number) => `${n} 文字まで`,
 	like: "いいね",
+	verifying: "確認中…",
+	verifyFailed: "人間であることの確認に失敗しました。もう一度送ってください",
 };
 
 const en: typeof ja = {
@@ -94,6 +96,8 @@ const en: typeof ja = {
 	previewEmpty: "(nothing to preview)",
 	tooLong: (n) => `Up to ${n} characters`,
 	like: "Like",
+	verifying: "Verifying…",
+	verifyFailed: "Could not verify you are human. Please try again",
 };
 
 export type Dict = typeof ja;
