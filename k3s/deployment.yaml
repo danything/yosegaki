@@ -64,7 +64,7 @@ spec:
             # Cloudflare ダッシュボード → Turnstile → ウィジェット (doany.io) の site key。
             # 公開してよい値なのでここに書く。secret は Infisical
             - name: TURNSTILE_SITE_KEY
-              value: ""
+              value: 0x4AAAAAAEoiKxn884OxoH4h
             - name: SMTP_HOST
               value: smtp.office365.com
             - name: SMTP_PORT
