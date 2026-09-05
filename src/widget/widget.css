@@ -477,6 +477,11 @@ a.ysg-name:hover {
 	margin: 0.15rem 0 0;
 	font-size: 0.95em;
 }
+.ysg-search {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
 .ysg-center-foot {
 	display: flex;
 	align-items: center;

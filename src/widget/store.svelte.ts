@@ -133,18 +133,21 @@ export class Store {
 	}
 
 	feed(
-		kind: "recent" | "replies" | "mine" | "pending",
+		kind: "recent" | "replies" | "mine" | "pending" | "search",
 		before: number | null,
+		q = "",
 	): Promise<Feed> {
 		const path = {
 			recent: "/recent",
 			replies: "/me/replies",
 			mine: "/me/comments",
 			pending: "/admin/pending",
+			search: "/admin/comments",
 		}[kind];
-		return this.api.get<Feed>(
-			`${path}?limit=20${before ? `&before=${before}` : ""}`,
-		);
+		const params = new URLSearchParams({ limit: "20" });
+		if (before) params.set("before", String(before));
+		if (kind === "search" && q) params.set("q", q);
+		return this.api.get<Feed>(`${path}?${params}`);
 	}
 
 	/** hash の変化を追う。戻り値で解除 */

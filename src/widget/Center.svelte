@@ -3,7 +3,7 @@ import type { Store } from "./store.svelte";
 import type { Comment } from "./types";
 import { excerpt, relativeTime } from "./util";
 
-type Tab = "recent" | "replies" | "mine" | "pending";
+type Tab = "recent" | "replies" | "mine" | "pending" | "search";
 
 let { store }: { store: Store } = $props();
 const t = $derived(store.t);
@@ -14,10 +14,11 @@ let nextBefore = $state<number | null>(null);
 let loading = $state(false);
 let error = $state("");
 let loginError = $state("");
+let query = $state("");
 
 const tabs = $derived<Tab[]>(
 	store.admin
-		? ["recent", "replies", "mine", "pending"]
+		? ["recent", "replies", "mine", "pending", "search"]
 		: ["recent", "replies", "mine"],
 );
 
@@ -31,7 +32,7 @@ async function open(next: Tab, more = false) {
 	loading = true;
 	error = "";
 	try {
-		const r = await store.feed(next, more ? nextBefore : null);
+		const r = await store.feed(next, more ? nextBefore : null, query.trim());
 		// 待っている間に別のタブへ移っていたら捨てる
 		if (tab !== next) return;
 		items = more ? [...items, ...r.comments] : r.comments;
@@ -72,8 +73,11 @@ function jump(ev: MouseEvent, c: Comment) {
 
 async function approve(c: Comment) {
 	try {
-		await store.approve(c.id);
-		items = items.filter((x) => x.id !== c.id);
+		const updated = await store.approve(c.id);
+		items =
+			tab === "pending"
+				? items.filter((x) => x.id !== c.id)
+				: items.map((x) => (x.id === c.id ? updated : x));
 	} catch (e) {
 		error = store.message(e);
 	}
@@ -114,6 +118,12 @@ async function login() {
 			</button>
 		{/each}
 	</div>
+	{#if tab === "search"}
+		<form class="ysg-search" onsubmit={(ev) => { ev.preventDefault(); open("search"); }}>
+			<input class="ysg-input" type="search" placeholder={t.searchPlaceholder} bind:value={query} />
+			<button type="submit" class="ysg-btn" disabled={loading}>{t.tabs.search}</button>
+		</form>
+	{/if}
 	{#if error}<p class="ysg-error">{error}</p>{/if}
 	<ul class="ysg-feed" class:ysg-loading={loading} aria-busy={loading}>
 		{#each items as c (c.id)}
@@ -121,16 +131,18 @@ async function login() {
 				{#if c.avatar}<img class="ysg-avatar ysg-avatar-sm" src={c.avatar} alt="" loading="lazy" width="28" height="28" />{/if}
 				<div class="ysg-feed-main">
 					<div class="ysg-meta">
-						<span class="ysg-name">{c.name}</span>
+						<span class="ysg-name">{c.status === "deleted" ? t.deleted : c.name}</span>
 						{#if c.is_admin}<span class="ysg-tag ysg-tag-admin">{t.admin}</span>{/if}
 						{#if c.status === "pending"}<span class="ysg-tag ysg-tag-pending">{t.pending}</span>{/if}
 						<time class="ysg-time" datetime={c.created_at}>{relativeTime(c.created_at, store.lang)}</time>
 					</div>
 					<a class="ysg-feed-page" href={link(c)} onclick={(ev) => jump(ev, c)}>{c.page.title || c.page.key}</a>
 					<p class="ysg-feed-text">{excerpt(c.body_html)}</p>
-					{#if store.admin && (tab === "pending" || c.status === "pending")}
+					{#if store.admin && c.status !== "deleted"}
 						<div class="ysg-actions">
-							<button type="button" class="ysg-act ysg-act-approve" onclick={() => approve(c)}>{t.approve}</button>
+							{#if c.status === "pending"}
+								<button type="button" class="ysg-act ysg-act-approve" onclick={() => approve(c)}>{t.approve}</button>
+							{/if}
 							<button type="button" class="ysg-act" onclick={() => del(c)}>{t.delete}</button>
 						</div>
 					{/if}
