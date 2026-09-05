@@ -11,6 +11,8 @@ export interface StoreOptions {
 	lang: Lang;
 	sort?: Sort;
 	limit?: number;
+	/** この hash を付けて開いたときだけ管理者ログインを出す */
+	adminHash?: string;
 }
 
 // 設定は 1 ページに何度 init しても 1 回しか取りに行かない
@@ -37,6 +39,9 @@ export class Store {
 	replies = $state<Comment[]>([]);
 	seen = $state("");
 	centerOpen = $state(false);
+	/** URL の hash が adminHash と一致している (管理者ログインを出してよい) */
+	adminHint = $state(false);
+	readonly adminHash: string;
 	replyTo = $state<number | null>(null);
 	editing = $state<number | null>(null);
 
@@ -54,6 +59,8 @@ export class Store {
 		this.title = opts.title;
 		this.url = opts.url;
 		this.limit = opts.limit ?? 50;
+		this.adminHash = opts.adminHash ?? "#yosegaki-admin";
+		this.adminHint = location.hash === this.adminHash;
 		this.sort = opts.sort ?? "newest";
 		this.author = { ...this.author, ...load<Partial<Author>>("author", {}) };
 		this.seen = load<string>("seen", "");
@@ -138,6 +145,16 @@ export class Store {
 		return this.api.get<Feed>(
 			`${path}?limit=20${before ? `&before=${before}` : ""}`,
 		);
+	}
+
+	/** hash の変化を追う。戻り値で解除 */
+	watchHash(): () => void {
+		const on = () => {
+			this.adminHint = location.hash === this.adminHash;
+			if (this.adminHint && !this.admin) this.centerOpen = true;
+		};
+		window.addEventListener("hashchange", on);
+		return () => window.removeEventListener("hashchange", on);
 	}
 
 	toggleCenter(): void {

@@ -11,7 +11,10 @@ const t = $derived(store.t);
 const sorts: Sort[] = ["newest", "oldest", "popular"];
 
 onMount(() => {
+	const unwatch = store.watchHash();
 	store.init().then(() => {
+		// 管理者用のリンクで来たら、ログインボタンのある通知パネルを開いておく
+		if (store.adminHint && !store.admin) store.centerOpen = true;
 		// #ysg-<id> で来たらそこまで飛ぶ
 		const m = location.hash.match(/^#ysg-(\d+)$/);
 		if (!m) return;
@@ -21,6 +24,7 @@ onMount(() => {
 		el.classList.add("ysg-flash");
 		setTimeout(() => el.classList.remove("ysg-flash"), 2000);
 	});
+	return unwatch;
 });
 </script>
 

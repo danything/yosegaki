@@ -19,6 +19,8 @@ export interface InitOptions {
 	limit?: number;
 	/** false なら同梱の CSS を差さない */
 	css?: boolean;
+	/** この hash を付けて開いたときだけ管理者ログインを出す。既定 #yosegaki-admin */
+	adminHash?: string;
 }
 
 export interface Instance {
@@ -63,6 +65,7 @@ export function init(opts: InitOptions = {}): Instance | null {
 		lang: detectLang(opts.lang),
 		sort: opts.sort,
 		limit: opts.limit,
+		adminHash: opts.adminHash,
 	});
 	const app = mount(Widget, { target, props: { store } });
 	return {
@@ -97,6 +100,7 @@ if (script && script.dataset.auto !== "false") {
 			lang: d.lang as Lang | undefined,
 			sort: d.sort as Sort | undefined,
 			limit: d.limit ? Number(d.limit) : undefined,
+			adminHash: d.adminHash,
 			css: d.css !== "false",
 		});
 	if (document.readyState === "loading")

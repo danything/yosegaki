@@ -143,7 +143,8 @@ async function login() {
 	{#if nextBefore !== null}
 		<button type="button" class="ysg-btn ysg-more" disabled={loading} onclick={() => open(tab, true)}>{t.loadMore}</button>
 	{/if}
-	{#if store.config?.admin_enabled}
+	<!-- ログインは専用リンク (#yosegaki-admin) で来たときだけ出す。読者には見せない -->
+	{#if store.config?.admin_enabled && (store.admin || store.adminHint)}
 		<div class="ysg-center-foot">
 			{#if store.admin}
 				<span class="ysg-muted">{t.loginAs(store.admin.name)}</span>

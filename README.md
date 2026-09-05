@@ -12,7 +12,7 @@
 ## 考え方
 
 - **スタイルを押し付けない**: 描画は埋め込み先の DOM に直接行い、色は埋め込み先の文字色を薄めて使う。ライト/ダークの切り替えは何もしなくて追従する。`--ysg-accent` などの変数で寄せられるし、`data-css="false"` で同梱 CSS を丸ごと捨てて自分で書いてもいい。クラスは全部 `ysg-` 始まり
-- **管理画面を作らない**: 管理者ログインはコメント欄の「通知」の中にある。パスワードは持たず OIDC (Entra ID など) だけで、ログインすると、その場で承認・削除ができ、承認待ちタブが増える。荒らしの掃除に別のページは要らない
+- **管理画面を作らない**: 管理者ログインはコメント欄の「通知」の中にあるが、読者には見せない。記事の URL に `#yosegaki-admin` を付けて開いたときだけボタンが出る。パスワードは持たず OIDC (Entra ID など) だけで、ログインすると、その場で承認・削除ができ、承認待ちタブが増える。荒らしの掃除に別のページは要らない
 - **API は UI と独立**: `/api/v1` は JSON だけ返す。埋め込みスクリプトはその一利用者に過ぎず、自分で画面を作るならそのまま叩ける
 - **1 プロセス 1 ファイル**: SQLite (WAL) を 1 つ持つだけ。バックアップはファイルのコピー
 
@@ -30,6 +30,7 @@
 | `data-sort` | `newest` | `newest` / `oldest` / `popular` |
 | `data-css` | `true` | `false` なら同梱 CSS を差さない |
 | `data-auto` | `true` | `false` なら自動で描画せず `Yosegaki.init()` を待つ |
+| `data-admin-hash` | `#yosegaki-admin` | この hash を付けて開いたときだけ管理者ログインを出す |
 
 SPA (swup など) でページを差し替えるなら `data-auto="false"` にして、遷移のたびに呼ぶ。
 
@@ -94,7 +95,7 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 
 ### 管理者の OIDC
 
-自前のパスワード認証は持たない。追従が辛い割に得るものが無いので、Entra ID や Keycloak など OIDC が話せる IdP に任せる。ウィジェットの「〜 でログイン」がポップアップで `/admin/login` を開き、IdP を経て `/admin/callback` に戻る。そこで id_token を検証して `OIDC_ADMIN_GROUPS` / `OIDC_ADMINS` に照らし、通れば管理者トークンを `postMessage` で開いた元のウィンドウに返す。Cookie は使わないので、埋め込み先のドメインが違っても Safari で困らない。
+自前のパスワード認証は持たない。追従が辛い割に得るものが無いので、Entra ID や Keycloak など OIDC が話せる IdP に任せる。記事を `#yosegaki-admin` 付きで開くと通知パネルに「〜 でログイン」が出る。押すとポップアップで `/admin/login` を開き、IdP を経て `/admin/callback` に戻る。そこで id_token を検証して `OIDC_ADMIN_GROUPS` / `OIDC_ADMINS` に照らし、通れば管理者トークンを `postMessage` で開いた元のウィンドウに返す。Cookie は使わないので、埋め込み先のドメインが違っても Safari で困らない。
 
 IdP 側では redirect URI に `https://<host>/admin/callback` を登録し、scope `openid profile email` を許す。グループで絞るなら id_token に `groups` クレームを出す設定にして (Entra: トークン構成 → グループ要求を追加)、`OIDC_ADMIN_GROUPS` にグループの Object ID を書く。
 
