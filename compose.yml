@@ -1,0 +1,24 @@
+# ローカル開発。genkan (https://github.com/DAnything/genkan) 経由で
+# https://yosegaki.localhost で開く。秘密は compose.override.yml に書く。
+services:
+  yosegaki:
+    build:
+      target: base
+    volumes:
+      - .:/usr/src/app
+    command: sh -c "bun i && bun run dev"
+    networks:
+      - proxy
+      - default
+    environment:
+      - PROTOCOL_HEADER=x-forwarded-proto
+      - HOST_HEADER=x-forwarded-host
+      - ADMIN_PASSWORD=admin
+      - ADMIN_NAME=admin
+    labels:
+      caddy: yosegaki.localhost
+      caddy.reverse_proxy: "{{upstreams 5173}}"
+
+networks:
+  proxy:
+    external: true

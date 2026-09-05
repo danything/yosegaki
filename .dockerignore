@@ -1,0 +1,22 @@
+/node_modules
+/.svelte-kit/
+/build/
+/data/
+/coverage
+.DS_Store
+*.pem
+*.tsbuildinfo
+.env*
+/static/embed.js
+/static/widget.css
+
+# イメージに入らないもの。ここを触ってもビルドキャッシュが飛ばないようにする
+/k3s
+/.github
+/.claude
+/.vscode
+/README.md
+/LICENSE
+/renovate.json
+/compose.yml
+/compose.override.yml

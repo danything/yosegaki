@@ -1,0 +1,473 @@
+/*
+ * 同梱の最小限のスタイル。色は決めず、埋め込み先の文字色 (currentColor) を
+ * 薄めて使うので、ライト/ダークどちらでもそれなりに見える。
+ * 変えたいところは変数で上書きする。全部捨てたいなら data-css="false"。
+ *
+ *   --ysg-accent     ボタンやリンクの色 (既定は埋め込み先の link 色)
+ *   --ysg-accent-fg  その上の文字色
+ *   --ysg-radius     角丸
+ *   --ysg-line       罫線の色
+ *   --ysg-surface    入力欄などの背景
+ */
+.ysg {
+	--_accent: var(--ysg-accent, LinkText);
+	--_accent-fg: var(--ysg-accent-fg, #fff);
+	--_radius: var(--ysg-radius, 0.5rem);
+	--_line: var(--ysg-line, color-mix(in srgb, currentColor 18%, transparent));
+	--_surface: var(
+		--ysg-surface,
+		color-mix(in srgb, currentColor 5%, transparent)
+	);
+	font: inherit;
+	color: inherit;
+	line-height: 1.6;
+	box-sizing: border-box;
+}
+.ysg *,
+.ysg *::before,
+.ysg *::after {
+	box-sizing: inherit;
+}
+.ysg ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.ysg-muted {
+	opacity: 0.6;
+}
+.ysg-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+.ysg-count {
+	font-weight: 600;
+	font-size: 1.1em;
+}
+.ysg-tools {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* ボタン・入力 */
+.ysg-btn,
+.ysg-select,
+.ysg-input,
+.ysg-textarea {
+	font: inherit;
+	color: inherit;
+	border: 1px solid var(--_line);
+	border-radius: var(--_radius);
+	background: var(--_surface);
+	padding: 0.4rem 0.8rem;
+}
+.ysg-btn {
+	cursor: pointer;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+.ysg-btn:hover:not(:disabled) {
+	background: color-mix(in srgb, currentColor 10%, transparent);
+}
+.ysg-btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+.ysg-btn-primary {
+	background: var(--_accent);
+	color: var(--_accent-fg);
+	border-color: transparent;
+}
+.ysg-btn-primary:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--_accent) 85%, black);
+}
+.ysg-btn.ysg-active {
+	border-color: var(--_accent);
+}
+.ysg-input,
+.ysg-textarea {
+	width: 100%;
+	min-width: 0;
+}
+.ysg-input:focus,
+.ysg-textarea:focus,
+.ysg-select:focus {
+	outline: 2px solid color-mix(in srgb, var(--_accent) 50%, transparent);
+	outline-offset: 1px;
+}
+.ysg-textarea {
+	display: block;
+	resize: vertical;
+	line-height: 1.6;
+}
+.ysg-badge {
+	display: inline-block;
+	min-width: 1.25em;
+	padding: 0 0.35em;
+	margin-left: 0.3em;
+	border-radius: 999px;
+	background: var(--_accent);
+	color: var(--_accent-fg);
+	font-size: 0.75em;
+	font-weight: 600;
+	line-height: 1.5;
+	text-align: center;
+}
+
+/* 投稿欄 */
+.ysg-editor {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: 1.25rem;
+}
+.ysg-editor-reply,
+.ysg-editor-edit {
+	margin: 0.5rem 0 0.5rem;
+}
+.ysg-fields {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.5rem;
+}
+@media (max-width: 560px) {
+	.ysg-fields {
+		grid-template-columns: 1fr;
+	}
+}
+.ysg-editor-foot {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	font-size: 0.9em;
+}
+.ysg-spacer {
+	flex: 1;
+}
+.ysg-check {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35em;
+	cursor: pointer;
+}
+.ysg-preview {
+	min-height: 5rem;
+	padding: 0.5rem 0.8rem;
+	border: 1px dashed var(--_line);
+	border-radius: var(--_radius);
+}
+.ysg-error {
+	color: #dc2626;
+	margin: 0.25rem 0;
+	font-size: 0.9em;
+}
+.ysg-notice {
+	opacity: 0.8;
+	font-size: 0.9em;
+}
+.ysg-empty {
+	text-align: center;
+	opacity: 0.6;
+	padding: 1.5rem 0;
+	margin: 0;
+}
+.ysg-more {
+	display: block;
+	width: 100%;
+	margin-top: 0.75rem;
+}
+
+/* コメント */
+.ysg-comment {
+	padding: 0.9rem 0;
+}
+.ysg-replies .ysg-comment {
+	padding: 0.6rem 0;
+}
+.ysg-list > .ysg-comment + .ysg-comment {
+	border-top: 1px solid var(--_line);
+}
+.ysg-row {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+}
+.ysg-avatar {
+	flex: none;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: var(--_surface);
+	object-fit: cover;
+}
+.ysg-avatar-sm {
+	width: 28px;
+	height: 28px;
+}
+.ysg-main {
+	flex: 1;
+	min-width: 0;
+}
+.ysg-meta {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	font-size: 0.9em;
+	margin-bottom: 0.2rem;
+}
+.ysg-name {
+	font-weight: 600;
+	color: inherit;
+	text-decoration: none;
+}
+a.ysg-name:hover {
+	text-decoration: underline;
+}
+.ysg-time,
+.ysg-edited,
+.ysg-replyto {
+	opacity: 0.6;
+}
+.ysg-tag {
+	font-size: 0.75em;
+	padding: 0 0.4em;
+	border-radius: 0.3em;
+	border: 1px solid var(--_line);
+	line-height: 1.5;
+}
+.ysg-tag-admin {
+	border-color: var(--_accent);
+	color: var(--_accent);
+}
+.ysg-pending > .ysg-row {
+	opacity: 0.7;
+}
+.ysg-actions {
+	display: flex;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+	margin-top: 0.25rem;
+	font-size: 0.85em;
+}
+.ysg-act {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0.15rem 0.4rem;
+	border-radius: var(--_radius);
+	opacity: 0.65;
+	cursor: pointer;
+}
+.ysg-act:hover:not(:disabled) {
+	opacity: 1;
+	background: var(--_surface);
+}
+.ysg-act:disabled {
+	cursor: default;
+}
+.ysg-liked {
+	opacity: 1;
+	color: #e11d48;
+}
+.ysg-act-approve {
+	color: var(--_accent);
+	opacity: 1;
+}
+.ysg-replies {
+	margin: 0.25rem 0 0 calc(40px + 0.75rem);
+	border-left: 2px solid var(--_line);
+	padding-left: 0.75rem;
+}
+@media (max-width: 560px) {
+	.ysg-replies {
+		margin-left: 1rem;
+	}
+}
+.ysg-replies .ysg-avatar {
+	width: 28px;
+	height: 28px;
+}
+.ysg-flash {
+	animation: ysg-flash 2s ease-out;
+}
+@keyframes ysg-flash {
+	from {
+		background: color-mix(in srgb, var(--_accent) 20%, transparent);
+	}
+	to {
+		background: transparent;
+	}
+}
+
+/* 本文 (Markdown) */
+.ysg-body {
+	overflow-wrap: anywhere;
+}
+.ysg-body > :first-child {
+	margin-top: 0;
+}
+.ysg-body > :last-child {
+	margin-bottom: 0;
+}
+.ysg-body p {
+	margin: 0.5em 0;
+}
+.ysg-body a {
+	color: var(--_accent);
+}
+.ysg-body pre {
+	overflow-x: auto;
+	padding: 0.6em 0.8em;
+	border-radius: var(--_radius);
+	background: var(--_surface);
+	font-size: 0.9em;
+}
+.ysg-body code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 0.9em;
+	padding: 0.1em 0.3em;
+	border-radius: 0.3em;
+	background: var(--_surface);
+}
+.ysg-body pre code {
+	padding: 0;
+	background: none;
+	font-size: inherit;
+}
+.ysg-body blockquote {
+	margin: 0.5em 0;
+	padding-left: 0.8em;
+	border-left: 3px solid var(--_line);
+	opacity: 0.85;
+}
+.ysg-body ul,
+.ysg-body ol {
+	margin: 0.5em 0;
+	padding-left: 1.5em;
+}
+.ysg-body ul {
+	list-style: disc;
+}
+.ysg-body ol {
+	list-style: decimal;
+}
+.ysg-body h1,
+.ysg-body h2,
+.ysg-body h3,
+.ysg-body h4,
+.ysg-body h5,
+.ysg-body h6 {
+	margin: 0.8em 0 0.3em;
+	font-size: 1.05em;
+	font-weight: 700;
+}
+.ysg-body table {
+	border-collapse: collapse;
+	margin: 0.5em 0;
+	font-size: 0.95em;
+}
+.ysg-body th,
+.ysg-body td {
+	border: 1px solid var(--_line);
+	padding: 0.2em 0.6em;
+}
+.ysg-body img {
+	max-width: 100%;
+	height: auto;
+}
+.ysg-body hr {
+	border: 0;
+	border-top: 1px solid var(--_line);
+}
+
+/* 通知センター */
+.ysg-center {
+	border: 1px solid var(--_line);
+	border-radius: var(--_radius);
+	padding: 0.75rem;
+	margin-bottom: 1.25rem;
+}
+.ysg-tabs {
+	display: flex;
+	gap: 0.25rem;
+	border-bottom: 1px solid var(--_line);
+	margin-bottom: 0.5rem;
+}
+.ysg-tab {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	padding: 0.35rem 0.6rem;
+	margin-bottom: -1px;
+	opacity: 0.65;
+	cursor: pointer;
+}
+.ysg-tab:hover,
+.ysg-tab.ysg-active {
+	opacity: 1;
+}
+.ysg-tab.ysg-active {
+	border-bottom-color: var(--_accent);
+}
+.ysg-feed {
+	max-height: 24rem;
+	overflow-y: auto;
+}
+.ysg-feed-item {
+	display: flex;
+	gap: 0.6rem;
+	padding: 0.5rem 0;
+}
+.ysg-feed-item + .ysg-feed-item {
+	border-top: 1px solid var(--_line);
+}
+.ysg-feed-main {
+	flex: 1;
+	min-width: 0;
+}
+.ysg-feed-page {
+	display: block;
+	font-size: 0.85em;
+	color: var(--_accent);
+	text-decoration: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ysg-feed-page:hover {
+	text-decoration: underline;
+}
+.ysg-feed-text {
+	margin: 0.15rem 0 0;
+	font-size: 0.95em;
+}
+.ysg-center-foot {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.75rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--_line);
+	font-size: 0.9em;
+}
+.ysg-login {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.ysg-login .ysg-input {
+	width: auto;
+}

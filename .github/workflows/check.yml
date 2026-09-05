@@ -1,0 +1,21 @@
+name: Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'k3s/**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      - run: bun i --frozen-lockfile
+      - run: bun run build:widget
+      - run: bunx biome ci
+      - run: bunx svelte-kit sync && bunx svelte-check --tsconfig ./tsconfig.json --tsgo
+      - run: bun test

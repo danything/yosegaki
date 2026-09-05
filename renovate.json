@@ -1,0 +1,11 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["github>5ym/renovate-config"],
+	"packageRules": [
+		{
+			"description": "svelte-check は TypeScript 6 と 7 を並べて入れる必要があり、7 側は @typescript/native の別名で読む。ここを 7 に上げると 6 が消えて bun run check が動かなくなる",
+			"matchDepNames": ["typescript"],
+			"allowedVersions": "<7"
+		}
+	]
+}
