@@ -52,6 +52,10 @@ spec:
               value: {{ .Values.siteName | quote }}
             - name: ALLOWED_ORIGINS
               value: {{ join "," .Values.allowedOrigins | quote }}
+            {{- if .Values.allowAnyOrigin }}
+            - name: ALLOW_ANY_ORIGIN
+              value: "true"
+            {{- end }}
             - name: MODERATION
               value: {{ .Values.moderation | quote }}
             - name: ADMIN_NAME

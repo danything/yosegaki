@@ -12,8 +12,10 @@ ingress:
     traefik.ingress.kubernetes.io/router.tls.certresolver: mydnschallenge
   tls: true
 
-# 埋め込みを許すオリジン。本番では必ず書く (空なら何でも許可)
+# 埋め込みを許すオリジン。空のままだと起動しない
 allowedOrigins: []
+# 誰でも埋め込めることを承知で allowedOrigins を空のまま動かすとき
+allowAnyOrigin: false
 siteName: yosegaki
 # none: 承認なしで公開 / links: リンクが多いものだけ承認待ち / all: 全部承認待ち
 moderation: none

@@ -23,6 +23,34 @@ export function remove(key: string): void {
 	} catch {}
 }
 
+const TOKEN = `${PREFIX}admin`;
+
+/**
+ * 管理者トークン。描画は埋め込み先の DOM で行う以上、そこの JS からは見えてしまう。
+ * せめて居座らないように、localStorage ではなくタブを閉じたら消える sessionStorage に置く
+ */
+export function loadToken(): string | null {
+	try {
+		return sessionStorage.getItem(TOKEN);
+	} catch {
+		return null;
+	}
+}
+
+export function saveToken(token: string): void {
+	try {
+		sessionStorage.setItem(TOKEN, token);
+	} catch {}
+}
+
+export function clearToken(): void {
+	try {
+		sessionStorage.removeItem(TOKEN);
+	} catch {}
+	// 以前の版が localStorage に置いていたもの
+	remove("admin");
+}
+
 /** 端末ごとの識別子。サーバには SHA-256 されたものしか残らない */
 export function visitorId(): string {
 	let id = load<string>("visitor", "");

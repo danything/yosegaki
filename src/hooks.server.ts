@@ -1,11 +1,15 @@
 import type { Handle } from "@sveltejs/kit";
-import { building } from "$app/environment";
+import { building, dev } from "$app/environment";
 import { verifyAdminToken, visitorHash } from "$lib/server/auth";
 import { db } from "$lib/server/db";
-import { env, originAllowed } from "$lib/server/env";
+import { assertOriginPolicy, env, originAllowed } from "$lib/server/env";
+import { json } from "$lib/server/http";
 
 // 設定ミスや壊れた DB は最初のリクエストではなく起動時に落とす
-if (!building) db();
+if (!building) {
+	assertOriginPolicy(dev);
+	db();
+}
 
 const ALLOW_HEADERS = "Content-Type, Authorization, X-Visitor";
 const ALLOW_METHODS = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
@@ -31,6 +35,22 @@ export const handle: Handle = async ({ event, resolve }) => {
 				vary: "Origin",
 			},
 		});
+	}
+
+	// Origin を送るのはブラウザだけ。許可していないサイトからの書き込みは、
+	// プリフライトの要らない形 (text/plain の POST など) でも通さない。
+	// Origin の無いリクエスト (curl やサーバ間) は API の利用者として素通しする
+	if (
+		origin !== null &&
+		!allowed &&
+		event.request.method !== "GET" &&
+		event.request.method !== "HEAD" &&
+		event.url.pathname.startsWith("/api/")
+	) {
+		return json(
+			{ error: "forbidden", message: "このオリジンからは書き込めない" },
+			403,
+		);
 	}
 
 	const auth = event.request.headers.get("authorization");

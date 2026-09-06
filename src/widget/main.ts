@@ -83,7 +83,22 @@ export async function counts(
 	const q = pages.map((p) => `page=${encodeURIComponent(p)}`).join("&");
 	const res = await fetch(`${server.replace(/\/$/, "")}/api/v1/count?${q}`);
 	if (!res.ok) throw new Error(`count failed: ${res.status}`);
-	return res.json();
+	// サーバはクエリと hash を落とした鍵で返す。渡した文字列のまま引けるように戻す
+	const found = (await res.json()) as Record<string, number>;
+	const out: Record<string, number> = {};
+	for (const p of pages) out[p] = found[canonical(p)] ?? 0;
+	return out;
+}
+
+function canonical(page: string): string {
+	try {
+		const url = new URL(page);
+		url.search = "";
+		url.hash = "";
+		return url.href;
+	} catch {
+		return page;
+	}
 }
 
 // <script src=".../embed.js" data-page="..." data-lang="en" data-css="false">

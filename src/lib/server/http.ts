@@ -1,4 +1,5 @@
 import type { RequestEvent, RequestHandler } from "@sveltejs/kit";
+import { originAllowed } from "./env";
 
 export class ApiError extends Error {
 	constructor(
@@ -65,6 +66,31 @@ export function str(
 	if (trimmed.length > max)
 		throw new ApiError(400, "bad_request", `${name} は ${max} 文字まで`);
 	return trimmed;
+}
+
+/**
+ * スレッドの鍵。http(s) の URL に限り、クエリと hash は落として正規化する。
+ * 許可していないオリジンの URL ではスレッドを立てられないし、読めない
+ */
+export function pageKey(
+	value: unknown,
+	self: string,
+	allow = originAllowed,
+): string {
+	const raw = str(value, 2000, "page", true);
+	let url: URL;
+	try {
+		url = new URL(raw);
+	} catch {
+		throw new ApiError(400, "bad_request", "page は http(s) の URL");
+	}
+	if (url.protocol !== "http:" && url.protocol !== "https:")
+		throw new ApiError(400, "bad_request", "page は http(s) の URL");
+	if (url.origin !== self && !allow(url.origin))
+		throw new ApiError(400, "bad_request", "page はこのサイトの URL ではない");
+	url.search = "";
+	url.hash = "";
+	return url.href;
 }
 
 export function intParam(

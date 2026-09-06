@@ -9,8 +9,16 @@ import {
 	toPublic,
 	upsertPage,
 } from "$lib/server/comments";
-import { env, originAllowed } from "$lib/server/env";
-import { ApiError, api, body, intParam, json, str } from "$lib/server/http";
+import { env } from "$lib/server/env";
+import {
+	ApiError,
+	api,
+	body,
+	intParam,
+	json,
+	pageKey,
+	str,
+} from "$lib/server/http";
 import { render } from "$lib/server/markdown";
 import { onCreated } from "$lib/server/notify";
 import { decideStatus } from "$lib/server/spam";
@@ -20,7 +28,7 @@ const SORTS: Sort[] = ["newest", "oldest", "popular"];
 
 /** ページのコメント一覧。返信も同じ配列に平らに入る (parent_id / root_id で組む) */
 export const GET = api((event) => {
-	const page = str(event.url.searchParams.get("page"), 2000, "page", true);
+	const page = pageKey(event.url.searchParams.get("page"), event.url.origin);
 	const sortRaw = event.url.searchParams.get("sort") ?? "newest";
 	if (!SORTS.includes(sortRaw as Sort))
 		throw new ApiError(400, "bad_request", "sort が不正");
@@ -76,20 +84,7 @@ export const POST = api(async (event) => {
 		return json({ ok: true }, 202);
 	}
 
-	const page = str(data.page, 2000, "page", true);
-	if (env.allowedOrigins.length > 0) {
-		let origin: string | null = null;
-		try {
-			origin = new URL(page).origin;
-		} catch {}
-		if (origin !== event.url.origin && !originAllowed(origin)) {
-			throw new ApiError(
-				400,
-				"bad_request",
-				"page はこのサイトの URL ではない",
-			);
-		}
-	}
+	const page = pageKey(data.page, event.url.origin);
 	const title = str(data.title, 300, "title");
 	const url = str(data.url, 2000, "url");
 	const name = str(data.name, 50, "name", true);

@@ -65,13 +65,15 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 
 | 環境変数 | 既定 | 意味 |
 |---|---|---|
-| `ALLOWED_ORIGINS` | (全部許可) | 埋め込みを許すオリジン。カンマ区切り。本番では必ず書く |
+| `ALLOWED_ORIGINS` | (無し) | 埋め込みを許すオリジン。カンマ区切り。空のままだと起動しない |
+| `ALLOW_ANY_ORIGIN` | `false` | `true` なら `ALLOWED_ORIGINS` が空でも起動する。誰でも埋め込める状態になる |
 | `OIDC_ISSUER` / `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` | (無効) | 管理者のログイン。3 つ揃うと有効で、無ければ管理機能ごと消える。redirect URI は `https://<host>/admin/callback` |
 | `OIDC_ADMIN_GROUPS` | (無し) | 管理者にするグループ。`groups` / `roles` クレームに含まれる値のカンマ区切り (Entra ならグループの Object ID) |
 | `OIDC_ADMINS` | (無し) | 管理者にする個人。email / preferred_username / sub のカンマ区切り |
 | `OIDC_LABEL` | `SSO` | ログインボタンの表示 (「〜 でログイン」) |
 | `ADMIN_NAME` / `ADMIN_EMAIL` | `admin` / (無し) | 管理者の表示名と、新着を受け取るメール |
 | `SECRET` | 起動ごとに乱数 | トークン署名と IP ハッシュの鍵。無いと再起動でログアウトする |
+| `ADMIN_TOKEN_DAYS` | `7` | 管理者トークンの有効期間 (日) |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET` | (無し) | [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) の鍵。両方あれば投稿に人間の確認を挟む。見た目は必要なときだけ出る |
 | `MODERATION` | `none` | `none`: 承認なしで公開 / `links`: リンクが `MAX_LINKS` (2) を超えたら承認待ち / `all`: 全部承認待ち |
 | `BLOCK_WORDS` | (無し) | 含んでいたら承認待ちにする語。カンマ区切り |
@@ -100,6 +102,18 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 IdP 側では redirect URI に `https://<host>/admin/callback` を登録し、scope `openid profile email` を許す。グループで絞るなら id_token に `groups` クレームを出す設定にして (Entra: トークン構成 → グループ要求を追加)、`OIDC_ADMIN_GROUPS` にグループの Object ID を書く。
 
 本人の識別は端末ごとの乱数 (`X-Visitor`) で、サーバには SHA-256 だけ残る。メールは通知にしか使わず、API には出ない (アバターは gravatar のハッシュ)。IP もハッシュしてレート制限にだけ使う。
+
+### 埋め込みの範囲
+
+`ALLOWED_ORIGINS` に書いたオリジンからしか使えない。空のままでは起動しないので、誰でも埋め込める状態に事故で出ることはない (承知の上なら `ALLOW_ANY_ORIGIN=true`)。効き方は 3 つ。
+
+- **CORS**: 許可外オリジンからのプリフライトは 403。ウィジェットは常に `X-Visitor` を送るのでプリフライトが必ず起き、許可していないサイトに貼っても動かない。プリフライトの要らない形 (`text/plain` の POST など) で抜けられないよう、許可外オリジンからの書き込みはハンドラの手前で 403 にする
+- **スレッドの鍵**: `page` は http(s) の URL に限り、オリジンをサーバ側で照合する。クエリと hash は落として正規化するので、同じ記事のスレッドが分裂しない
+- **管理者ログイン**: トークンを `postMessage` で返す先も許可オリジンだけ
+
+ただし `Origin` を送るのはブラウザだけなので、**これは「他人のサイトに貼らせない」仕組みであって、スクリプトからの直接投稿は止まらない**。そこを止めているのは Turnstile とレート制限と承認待ちで、匿名で書ける以上どのコメントサーバも事情は同じ。`Origin` の無いリクエストは API の利用者として通す。
+
+管理者トークンは埋め込み先の DOM に描く都合上そのドメインの JS からは見えるので、`sessionStorage` に置いてタブを閉じたら消し、有効期間も既定 7 日と短めにしてある。埋め込み先に XSS があれば読まれる前提で、`ADMIN_TOKEN_DAYS` はできるだけ短く。
 
 ### 通知
 

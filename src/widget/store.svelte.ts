@@ -1,7 +1,15 @@
 import { Api, ApiError } from "./api";
 import { type Dict, dict, type Lang } from "./i18n";
 import type { Author, Comment, Config, Feed, Sort } from "./types";
-import { load, remove, save, visitorId } from "./util";
+import {
+	clearToken,
+	load,
+	loadToken,
+	remove,
+	save,
+	saveToken,
+	visitorId,
+} from "./util";
 
 export interface StoreOptions {
 	server: string;
@@ -64,7 +72,9 @@ export class Store {
 		this.sort = opts.sort ?? "newest";
 		this.author = { ...this.author, ...load<Partial<Author>>("author", {}) };
 		this.seen = load<string>("seen", "");
-		this.api.token = load<string | null>("admin", null);
+		this.api.token = loadToken();
+		// 以前の版が localStorage に置いた鍵。一度ログインし直してもらう
+		remove("admin");
 	}
 
 	repliesOf(rootId: number): Comment[] {
@@ -302,7 +312,7 @@ export class Store {
 			},
 		);
 		this.api.token = r.token;
-		save("admin", r.token);
+		saveToken(r.token);
 		this.admin = { name: r.name };
 		if (!this.author.name) this.author = { ...this.author, name: r.name };
 		await this.load(true);
@@ -310,7 +320,7 @@ export class Store {
 
 	logout(): void {
 		this.api.token = null;
-		remove("admin");
+		clearToken();
 		this.admin = null;
 	}
 

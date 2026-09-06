@@ -33,6 +33,8 @@ export const env = {
 	dbPath: process.env.DB_PATH ?? "data/yosegaki.db",
 	/** 埋め込み元として許可するオリジン。空なら何でも許可 (開発用) */
 	allowedOrigins: list("ALLOWED_ORIGINS"),
+	/** 誰でも埋め込めることを承知で ALLOWED_ORIGINS を空のまま本番に出すとき */
+	allowAnyOrigin: process.env.ALLOW_ANY_ORIGIN === "true",
 	/** メールの件名などに使う */
 	siteName: process.env.SITE_NAME ?? "yosegaki",
 	/** 管理者の表示名と、新着を受け取るメール */
@@ -40,8 +42,8 @@ export const env = {
 	adminEmail: process.env.ADMIN_EMAIL ?? "",
 	/** トークン署名と IP ハッシュの鍵。無ければ起動ごとに乱数 (再起動でログアウトする) */
 	secret: process.env.SECRET ?? crypto.randomUUID(),
-	/** 管理者トークンの有効期間 (日) */
-	adminTokenDays: int("ADMIN_TOKEN_DAYS", 30),
+	/** 管理者トークンの有効期間 (日)。埋め込み先に置く鍵なので短く持つ */
+	adminTokenDays: int("ADMIN_TOKEN_DAYS", 7),
 	/** 接続元 IP を取るヘッダ。Cloudflare 配下なら CF-Connecting-IP */
 	clientIpHeader: process.env.CLIENT_IP_HEADER ?? "",
 
@@ -89,6 +91,17 @@ export const env = {
 	/** 新着を JSON で POST する先。空なら送らない */
 	webhookUrl: process.env.WEBHOOK_URL ?? "",
 } as const;
+
+/**
+ * ALLOWED_ORIGINS を空のまま本番に出させない。空は「誰でも埋め込める」であって、
+ * 事故で踏むには重すぎる。承知の上なら ALLOW_ANY_ORIGIN=true と書く
+ */
+export function assertOriginPolicy(dev: boolean): void {
+	if (dev || env.allowAnyOrigin || env.allowedOrigins.length > 0) return;
+	throw new Error(
+		"ALLOWED_ORIGINS が空。埋め込みを許すオリジンを指定するか、誰でも埋め込めることを承知で ALLOW_ANY_ORIGIN=true を付ける",
+	);
+}
 
 export function originAllowed(origin: string | null): boolean {
 	if (env.allowedOrigins.length === 0) return true;
