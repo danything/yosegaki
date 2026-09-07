@@ -152,6 +152,25 @@ spec:
       path: /yosegaki/yosegaki-secrets
 ```
 
+入口は Gateway API の `HTTPRoute` と標準の `Ingress` のどちらでも作れる。既定は `ingress.enabled: true` の
+Ingress (annotations は Traefik 向け) だが、**Ingress API は凍結済みなので新しく組むなら `httpRoute`。**
+その場合は `ingress.enabled: false` にして、付け先の Gateway を `httpRoute.parentRefs` に書く
+(HTTPRoute は自分では待ち受けを持たないので省略できない)。証明書は Gateway 側のリスナーが持つ。
+
+```yaml
+host: yk.doany.io
+ingress:
+  enabled: false
+httpRoute:
+  enabled: true
+  parentRefs:
+    - name: my-gateway
+      namespace: gateway-system
+      sectionName: https
+  # 空なら上の host をそのまま使う
+  hostnames: []
+```
+
 `values.yaml` に全部書いてある。秘密は `existingSecret` (既定 `yosegaki-secrets`) のキー `secret` `oidc-client-secret` `smtp-password` `turnstile-secret` で渡し、Infisical 純正 operator で引くなら `infisicalSecret` を有効にする。PVC には `helm.sh/resource-policy: keep` が付いていて、リリースを消しても DB は残る。
 
 ## API

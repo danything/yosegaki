@@ -3,9 +3,28 @@ image:
   # 省略時は Chart の appVersion (= ビルドしたコミット SHA)
   tag: ""
 
-# 公開するホスト名。空なら Ingress を作らない
+# 公開するホスト名。空なら入口 (Ingress / HTTPRoute) を作らない
 host: ""
+
+# 入口は Gateway API の HTTPRoute か、標準の Ingress のどちらか (両方は要らない)。
+# **新しく組むなら httpRoute。** Ingress API は凍結済みで、以後の機能は Gateway API 側に入る
+httpRoute:
+  enabled: false
+  # **付け先の Gateway。省略できない** (HTTPRoute は自分では待ち受けを持たない)。
+  # sectionName はリスナー名。ホスト名の段数ごとにリスナーが分かれている構成では、
+  # 名前ごとに parentRef を分ける (例: *.example.com と *.lan.example.com)
+  parentRefs: []
+  #  - name: my-gateway
+  #    namespace: gateway-system
+  #    sectionName: https
+  # 空なら上の host をそのまま使う (両方書く必要はない)
+  hostnames: []
+  annotations: {}
+
+# 既定は Ingress のまま。既定値は Traefik 向けなので、他の controller なら className と
+# annotations を差し替える (証明書の出し方が controller ごとに違う)
 ingress:
+  enabled: true
   className: traefik
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
