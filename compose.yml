@@ -8,7 +8,7 @@ services:
       - .:/usr/src/app
     command: sh -c "bun i && bun run dev"
     networks:
-      - proxy
+      - genkan
       - default
     environment:
       - PROTOCOL_HEADER=x-forwarded-proto
@@ -19,5 +19,5 @@ services:
       caddy.reverse_proxy: "{{upstreams 5173}}"
 
 networks:
-  proxy:
+  genkan:
     external: true
