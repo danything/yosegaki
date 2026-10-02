@@ -1,5 +1,5 @@
-import { mine } from "$lib/server/comments";
-import { api, intParam } from "$lib/server/http";
+import { mine } from "#lib/server/comments.js";
+import { api, intParam } from "#lib/server/http.js";
 
 /** X-Visitor の持ち主が書いたもの。承認待ちも含む */
 export const GET = api((event) => {

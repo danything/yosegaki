@@ -1,5 +1,5 @@
-import { pending } from "$lib/server/comments";
-import { api, intParam, requireAdmin } from "$lib/server/http";
+import { pending } from "#lib/server/comments.js";
+import { api, intParam, requireAdmin } from "#lib/server/http.js";
 
 export const GET = api((event) => {
 	requireAdmin(event);

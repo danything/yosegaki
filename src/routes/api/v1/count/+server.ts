@@ -1,5 +1,5 @@
-import { counts } from "$lib/server/comments";
-import { ApiError, api, pageKey } from "$lib/server/http";
+import { counts } from "#lib/server/comments.js";
+import { ApiError, api, pageKey } from "#lib/server/http.js";
 
 /** ?page=a&page=b または ?pages=a,b。承認済みの件数だけ返す */
 export const GET = api((event) => {

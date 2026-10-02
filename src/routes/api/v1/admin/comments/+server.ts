@@ -1,5 +1,5 @@
-import { type Status, search } from "$lib/server/comments";
-import { ApiError, api, intParam, requireAdmin } from "$lib/server/http";
+import { type Status, search } from "#lib/server/comments.js";
+import { ApiError, api, intParam, requireAdmin } from "#lib/server/http.js";
 
 const STATUSES: Status[] = ["approved", "pending", "deleted"];
 

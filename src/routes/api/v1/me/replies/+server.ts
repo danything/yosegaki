@@ -1,5 +1,5 @@
-import { repliesToMe } from "$lib/server/comments";
-import { api, intParam } from "$lib/server/http";
+import { repliesToMe } from "#lib/server/comments.js";
+import { api, intParam } from "#lib/server/http.js";
 
 /** 自分のコメントへの返信 (新しい順) */
 export const GET = api((event) => {
