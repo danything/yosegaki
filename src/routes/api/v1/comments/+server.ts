@@ -1,4 +1,4 @@
-import { emailHash, ipHash } from "$lib/server/auth";
+import { emailHash, ipHash } from "#lib/server/auth.js";
 import {
 	getComment,
 	getPage,
@@ -8,8 +8,8 @@ import {
 	type Sort,
 	toPublic,
 	upsertPage,
-} from "$lib/server/comments";
-import { env } from "$lib/server/env";
+} from "#lib/server/comments.js";
+import { env } from "#lib/server/env.js";
 import {
 	ApiError,
 	api,
@@ -18,11 +18,11 @@ import {
 	json,
 	pageKey,
 	str,
-} from "$lib/server/http";
-import { render } from "$lib/server/markdown";
-import { onCreated } from "$lib/server/notify";
-import { decideStatus } from "$lib/server/spam";
-import { turnstileEnabled, verifyTurnstile } from "$lib/server/turnstile";
+} from "#lib/server/http.js";
+import { render } from "#lib/server/markdown.js";
+import { onCreated } from "#lib/server/notify.js";
+import { decideStatus } from "#lib/server/spam.js";
+import { turnstileEnabled, verifyTurnstile } from "#lib/server/turnstile.js";
 
 const SORTS: Sort[] = ["newest", "oldest", "popular"];
 

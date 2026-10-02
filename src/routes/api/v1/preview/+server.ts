@@ -1,6 +1,6 @@
-import { env } from "$lib/server/env";
-import { api, body, str } from "$lib/server/http";
-import { render } from "$lib/server/markdown";
+import { env } from "#lib/server/env.js";
+import { api, body, str } from "#lib/server/http.js";
+import { render } from "#lib/server/markdown.js";
 
 export const POST = api(async (event) => {
 	const data = await body<{ body?: string }>(event);

@@ -1,5 +1,5 @@
-import { recent } from "$lib/server/comments";
-import { api, intParam } from "$lib/server/http";
+import { recent } from "#lib/server/comments.js";
+import { api, intParam } from "#lib/server/http.js";
 
 /** サイト全体の新着。?before=<id> で続きを取る */
 export const GET = api((event) => {

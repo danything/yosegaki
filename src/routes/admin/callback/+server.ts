@@ -1,6 +1,6 @@
 import type { RequestHandler } from "@sveltejs/kit";
-import { ApiError } from "$lib/server/http";
-import { handleCallback } from "$lib/server/oidc";
+import { ApiError } from "#lib/server/http.js";
+import { handleCallback } from "#lib/server/oidc.js";
 
 function esc(s: string): string {
 	return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);

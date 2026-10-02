@@ -1,5 +1,5 @@
-import { getComment, setLike } from "$lib/server/comments";
-import { ApiError, api, body, idParam } from "$lib/server/http";
+import { getComment, setLike } from "#lib/server/comments.js";
+import { ApiError, api, body, idParam } from "#lib/server/http.js";
 
 /** {value: true|false}。同じ値を何度送っても結果は同じ */
 export const PUT = api(async (event) => {
