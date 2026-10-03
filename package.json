@@ -13,24 +13,24 @@
 		"check": "biome check --write && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --tsgo"
 	},
 	"dependencies": {
-		"jose": "^6.2.11",
-		"marked": "^18.0.11",
-		"nodemailer": "^10.0.0",
-		"sanitize-html": "^2.17.7"
+		"jose": "^6.2.12",
+		"marked": "^18.0.14",
+		"nodemailer": "^10.0.13",
+		"sanitize-html": "^2.18.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.12",
+		"@biomejs/biome": "^2.5.15",
 		"@sveltejs/adapter-node": "^6.0.0",
 		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
-		"@types/bun": "^1.4.1",
-		"@types/node": "^26.4.1",
-		"@types/nodemailer": "^8.0.1",
-		"@types/sanitize-html": "^2.16.1",
+		"@types/bun": "^1.4.2",
+		"@types/node": "^26.6.4",
+		"@types/nodemailer": "^8.0.2",
+		"@types/sanitize-html": "^2.16.2",
 		"@typescript/native": "npm:typescript@7",
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.7.6",
-		"typescript": "~6",
+		"typescript": "~6.0.3",
 		"vite": "^8.3.2"
 	},
 	"imports": {
