@@ -97,7 +97,9 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
 
 ### 管理者の OIDC
 
-自前のパスワード認証は持たない。追従が辛い割に得るものが無いので、Entra ID や Keycloak など OIDC が話せる IdP に任せる。記事を `#yosegaki-admin` 付きで開くと通知パネルに「〜 でログイン」が出る。押すとポップアップで `/admin/login` を開き、IdP を経て `/admin/callback` に戻る。そこで id_token を検証して `OIDC_ADMIN_GROUPS` / `OIDC_ADMINS` に照らし、通れば管理者トークンを `postMessage` で開いた元のウィンドウに返す。Cookie は使わないので、埋め込み先のドメインが違っても Safari で困らない。
+自前のパスワード認証は持たない。追従が辛い割に得るものが無いので、Entra ID や Keycloak など OIDC が話せる IdP に任せる。記事を `#yosegaki-admin` 付きで開くと通知パネルに「〜 でログイン」が出る。押すとポップアップで `/admin/login` を開き、IdP を経て `/admin/callback` に戻る。そこで id_token の `aud` / `iss` / `exp` / `nonce` を確かめ、`OIDC_ADMIN_GROUPS` / `OIDC_ADMINS` に照らし、通れば管理者トークンを `postMessage` で開いた元のウィンドウに返す。Cookie は使わないので、埋め込み先のドメインが違っても Safari で困らない。
+
+id_token の署名は見ない。認可コードフローでは token endpoint から TLS で直接受け取るので、相手が誰かは TLS が保証している ([OIDC Core 3.1.3.7](https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation) が明示的に認めている)。その代わり discovery が広告してくる `token_endpoint` と `authorization_endpoint` が https かどうかを確かめる (localhost は開発用に例外)。
 
 IdP 側では redirect URI に `https://<host>/admin/callback` を登録し、scope `openid profile email` を許す。グループで絞るなら id_token に `groups` クレームを出す設定にして (Entra: トークン構成 → グループ要求を追加)、`OIDC_ADMIN_GROUPS` にグループの Object ID を書く。
 

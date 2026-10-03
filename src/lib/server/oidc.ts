@@ -1,8 +1,9 @@
 // 管理者の OIDC ログイン (認可コード + PKCE)。ウィジェットはポップアップで
 // /admin/login を開き、/admin/callback が postMessage でトークンを返す。
+// id_token は token endpoint から TLS で直接受け取るので署名は見ない
+// (OIDC Core 3.1.3.7)。代わりに aud / iss / exp / nonce を admit() で確かめる。
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { RequestEvent } from "@sveltejs/kit";
-import { createRemoteJWKSet, jwtVerify } from "jose";
 import { issueAdminToken } from "./auth";
 import { env, originAllowed } from "./env";
 import { ApiError } from "./http";
@@ -18,20 +19,39 @@ export function oidcEnabled(): boolean {
 interface Discovery {
 	authorization_endpoint: string;
 	token_endpoint: string;
-	jwks_uri: string;
 	issuer: string;
 }
 
 let discovery: Promise<Discovery> | null = null;
-let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
+
+/**
+ * 署名を見ない以上、相手と TLS で話していること自体が根拠になる。
+ * discovery が言ってきた URL をそのまま信じないで、https か確かめる
+ */
+function assertTls(raw: string, name: string): void {
+	let url: URL;
+	try {
+		url = new URL(raw);
+	} catch {
+		throw new Error(`discovery の ${name} が URL ではない: ${raw}`);
+	}
+	const local = ["localhost", "127.0.0.1", "[::1]", "::1"].includes(
+		url.hostname,
+	);
+	if (url.protocol !== "https:" && !local)
+		throw new Error(`discovery の ${name} が https ではない: ${raw}`);
+}
 
 async function discover(): Promise<Discovery> {
 	discovery ??= fetch(`${env.oidc.issuer}/.well-known/openid-configuration`, {
 		signal: AbortSignal.timeout(10_000),
 	})
-		.then((r) => {
+		.then(async (r) => {
 			if (!r.ok) throw new Error(`discovery ${r.status}`);
-			return r.json() as Promise<Discovery>;
+			const d = (await r.json()) as Discovery;
+			assertTls(d.token_endpoint, "token_endpoint");
+			assertTls(d.authorization_endpoint, "authorization_endpoint");
+			return d;
 		})
 		.catch((e) => {
 			discovery = null;
@@ -142,6 +162,47 @@ function strings(v: unknown): string[] {
 		: [];
 }
 
+/** id_token の中身。token endpoint から TLS で直接受け取ったものにだけ使う (署名は見ない) */
+export function claimsOf(jwt: string): Record<string, unknown> {
+	const [, body] = jwt.split(".");
+	if (!body) throw new ApiError(401, "unauthorized", "id_token の形が違う");
+	try {
+		return JSON.parse(Buffer.from(body, "base64url").toString()) as Record<
+			string,
+			unknown
+		>;
+	} catch {
+		throw new ApiError(401, "unauthorized", "id_token を読めない");
+	}
+}
+
+/**
+ * 署名を見ない分、中身は自分で確かめる。jwtVerify がやっていたことと同じ。
+ * ここを緩めると、別のアプリ宛てや期限切れのトークンで管理者になれてしまう
+ */
+export function admit(
+	claims: Record<string, unknown>,
+	expect: { issuer: string; clientId: string; nonce: string },
+	now = Date.now(),
+): void {
+	const aud = strings(claims.aud);
+	if (!aud.includes(expect.clientId))
+		throw new ApiError(
+			401,
+			"unauthorized",
+			"このアプリ宛ての id_token ではない",
+		);
+	// aud が複数あるときは azp が自分を指していること
+	if (aud.length > 1 && claims.azp !== expect.clientId)
+		throw new ApiError(401, "unauthorized", "azp がこのアプリではない");
+	if (claims.iss !== expect.issuer)
+		throw new ApiError(401, "unauthorized", "issuer が一致しない");
+	if (claims.nonce !== expect.nonce)
+		throw new ApiError(401, "unauthorized", "nonce が一致しない");
+	if (typeof claims.exp !== "number" || claims.exp * 1000 < now)
+		throw new ApiError(401, "unauthorized", "id_token の期限が切れている");
+}
+
 /** groups / roles クレームに管理者グループが入っているか、本人が名指しされているか */
 export function allowed(
 	claims: Record<string, unknown>,
@@ -209,14 +270,13 @@ export async function handleCallback(
 		);
 	}
 
-	jwks ??= createRemoteJWKSet(new URL(d.jwks_uri));
-	const { payload } = await jwtVerify(tokens.id_token, jwks, {
+	const claims = claimsOf(tokens.id_token);
+	admit(claims, {
 		issuer: d.issuer,
-		audience: env.oidc.clientId,
+		clientId: env.oidc.clientId,
+		nonce: pending.nonce,
 	});
-	if (payload.nonce !== pending.nonce)
-		throw new ApiError(401, "unauthorized", "nonce が一致しない");
-	if (!allowed(payload)) {
+	if (!allowed(claims)) {
 		throw new ApiError(403, "forbidden", "このアカウントは管理者ではない");
 	}
 	return {
