@@ -15,7 +15,7 @@
 	"dependencies": {
 		"jose": "^6.2.12",
 		"marked": "^18.0.14",
-		"nodemailer": "^10.0.13",
+		"nodemailer": "^10.0.14",
 		"sanitize-html": "^2.18.0"
 	},
 	"devDependencies": {
