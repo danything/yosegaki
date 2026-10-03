@@ -11,14 +11,11 @@ ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
 RUN bun run build
 
-FROM base AS prod-deps
-COPY package.json bun.lock ./
-RUN bun i --frozen-lockfile --production
-
+# 依存は全部 devDependencies にしてあるので vite が build/ に取り込む。
+# 実行時に要るのは build/ だけで、node_modules は入れない
 FROM base
 RUN mkdir -p data && chown bun:bun data
 USER bun
-COPY --from=prod-deps --chown=bun:bun /usr/src/app/node_modules ./node_modules
-COPY --from=builder   --chown=bun:bun /usr/src/app/package.json ./package.json
-COPY --from=builder   --chown=bun:bun /usr/src/app/build ./build
+COPY --from=builder --chown=bun:bun /usr/src/app/package.json ./package.json
+COPY --from=builder --chown=bun:bun /usr/src/app/build ./build
 CMD [ "bun", "build/index.js" ]
