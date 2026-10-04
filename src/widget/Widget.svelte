@@ -10,7 +10,8 @@ const t = $derived(store.t);
 const sorts: Sort[] = ["newest", "oldest", "popular"];
 
 // 通知パネルは開くまで要らないので別チャンク。ボタンに触れた時点で取りに行き始める。
-// 失敗したら覚えておかず、開き直したときに取り直す
+// 失敗したら覚えておかず、開き直したときに取り直す。デプロイを挟んで古い本体が
+// 使われているとチャンクがもう無いことがあるが、そのときは失敗を出すだけ (読み直せば直る)
 let center: Promise<typeof import("./Center.svelte")> | null = null;
 function loadCenter() {
 	center ??= import("./Center.svelte").catch((e) => {

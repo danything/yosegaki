@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onDestroy } from "svelte";
 import type { Store } from "./store.svelte";
-import type { Challenge } from "./turnstile";
+import { Challenge, loadTurnstile } from "./turnstile";
 
 interface Props {
 	store: Store;
@@ -50,11 +50,12 @@ function ensureChallenge(): Promise<Challenge> | null {
 	const el = turnstileEl;
 	const key = siteKey;
 	if (!el || !key) return null;
-	challenge ??= import("./turnstile")
-		.then(async (m) => {
-			const api = await m.loadTurnstile();
+	// 自前の turnstile.ts は小さいので本体に入れておく。別チャンクにすると、デプロイを
+	// 挟んで古い本体が使われたときに見つからず、投稿できなくなる
+	challenge ??= loadTurnstile()
+		.then((api) => {
 			if (destroyed) throw new Error("editor closed");
-			return new m.Challenge(api, el, key, store.lang);
+			return new Challenge(api, el, key, store.lang);
 		})
 		.catch((e) => {
 			// 次に触れたとき・送信のときに取り直す

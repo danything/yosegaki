@@ -12,8 +12,9 @@ const files = import.meta.glob<string>("../../../../widget-dist/embed/*.js", {
 const handlers = new Map(
 	Object.entries(files).map(([path, js]) => {
 		const name = path.slice(path.lastIndexOf("/") + 1);
-		// embed/app.js だけはハッシュの無い別名 (古い embed.js の逃げ道) なので短く持たせる
-		const policy = name === "app.js" ? "entry" : "immutable";
+		// embed/app.js だけはハッシュの無い別名 (古い embed.js の逃げ道)。
+		// これが古いままだと逃げ道ごと消えたハッシュを指すので、毎回確かめさせる
+		const policy = name === "app.js" ? "revalidate" : "immutable";
 		return [name, asset(js, "text/javascript; charset=utf-8", policy)];
 	}),
 );

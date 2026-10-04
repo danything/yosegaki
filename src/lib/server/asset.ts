@@ -5,13 +5,16 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
  * - `entry`: 埋め込み先の HTML が固定の URL で指すもの (embed.js, widget.css)。
  *   中身が変わり得るので短く持たせ、切れても裏で取り直す間は古いものを使わせる。
  *   取り直しは ETag で 304 になる
+ * - `revalidate`: 毎回 ETag で確かめさせるもの (embed/app.js)。古い embed.js の逃げ道
+ *   なので、それ自体が古くなっては困る
  * - `immutable`: ファイル名にハッシュが入っているもの (embed/*-<hash>.js)。
  *   中身が変わればファイル名が変わるので、1 年持たせて取り直させない
  */
-export type CachePolicy = "entry" | "immutable";
+export type CachePolicy = "entry" | "revalidate" | "immutable";
 
 const CACHE_CONTROL: Record<CachePolicy, string> = {
 	entry: "public, max-age=300, stale-while-revalidate=86400",
+	revalidate: "public, no-cache",
 	immutable: "public, max-age=31536000, immutable",
 };
 

@@ -68,11 +68,13 @@ describe("asset", () => {
 		expect(miss.status).toBe(200);
 	});
 
-	test("入口は短く持たせて裏で取り直させる。ハッシュ付きは immutable", () => {
+	test("入口は短く持たせて裏で取り直させる。別名は毎回確かめ、ハッシュ付きは immutable", () => {
 		const entry = asset(JS, "text/javascript", "entry")(get());
 		expect(entry.headers.get("cache-control")).toBe(
 			"public, max-age=300, stale-while-revalidate=86400",
 		);
+		const alias = asset(JS, "text/javascript", "revalidate")(get());
+		expect(alias.headers.get("cache-control")).toBe("public, no-cache");
 		const chunk = asset(JS, "text/javascript", "immutable")(get());
 		expect(chunk.headers.get("cache-control")).toBe(
 			"public, max-age=31536000, immutable",
