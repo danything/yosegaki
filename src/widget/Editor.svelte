@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onDestroy } from "svelte";
 import type { Store } from "./store.svelte";
 import { Challenge, loadTurnstile } from "./turnstile";
 
@@ -33,7 +34,8 @@ let hp = $state("");
 let notice = $state("");
 let textarea: HTMLTextAreaElement | undefined = $state();
 let turnstileEl: HTMLDivElement | undefined = $state();
-let challenge: Challenge | null = null;
+let challenge: Promise<Challenge> | null = null;
+let destroyed = false;
 let verifying = $state(false);
 
 const isEdit = $derived(editId !== null);
@@ -42,24 +44,42 @@ const siteKey = $derived(
 	isEdit ? "" : (store.config?.turnstile_site_key ?? ""),
 );
 
-// Turnstile は編集以外の投稿欄に 1 つずつ置く。要らなくなったら消す
-$effect(() => {
+// Turnstile は編集以外の投稿欄に 1 つずつ置く。ページを開いただけでは読まず、
+// 投稿欄に触れたとき (focusin) か送信のときに初めて Cloudflare のスクリプトを取りに行く
+function ensureChallenge(): Promise<Challenge> | null {
 	const el = turnstileEl;
 	const key = siteKey;
-	if (!el || !key) return;
-	let alive = true;
-	loadTurnstile()
+	if (!el || !key) return null;
+	// 自前の turnstile.ts は小さいので本体に入れておく。別チャンクにすると、デプロイを
+	// 挟んで古い本体が使われたときに見つからず、投稿できなくなる
+	challenge ??= loadTurnstile()
 		.then((api) => {
-			if (!alive) return;
-			challenge = new Challenge(api, el, key, store.lang);
+			if (destroyed) throw new Error("editor closed");
+			return new Challenge(api, el, key, store.lang);
 		})
-		.catch((e) => console.warn("[yosegaki] turnstile", e));
-	return () => {
-		alive = false;
-		challenge?.remove();
-		challenge = null;
-	};
+		.catch((e) => {
+			// 次に触れたとき・送信のときに取り直す
+			challenge = null;
+			throw e;
+		});
+	return challenge;
+}
+
+function warmUp() {
+	ensureChallenge()?.catch((e) => console.warn("[yosegaki] turnstile", e));
+}
+
+onDestroy(() => {
+	destroyed = true;
+	challenge?.then((c) => c.remove()).catch(() => {});
+	challenge = null;
 });
+
+async function resetChallenge() {
+	try {
+		(await challenge)?.reset();
+	} catch {}
+}
 
 $effect(() => {
 	if (parentId !== null || isEdit) textarea?.focus();
@@ -97,10 +117,11 @@ async function submit(ev: Event) {
 		} else {
 			let token: string | undefined;
 			if (siteKey) {
-				if (!challenge) throw new Error(t.verifyFailed);
 				verifying = true;
 				try {
-					token = await challenge.token();
+					const c = await ensureChallenge();
+					if (!c) throw new Error("turnstile unavailable");
+					token = await c.token();
 				} catch {
 					throw new Error(t.verifyFailed);
 				} finally {
@@ -108,7 +129,7 @@ async function submit(ev: Event) {
 				}
 			}
 			const c = await store.post(body, parentId, token);
-			challenge?.reset();
+			resetChallenge();
 			body = "";
 			previewing = false;
 			if (c.status === "pending") notice = t.pendingNote;
@@ -116,7 +137,7 @@ async function submit(ev: Event) {
 		}
 	} catch (e) {
 		// トークンは使い捨てなので、失敗したら次の送信のために捨てる
-		challenge?.reset();
+		resetChallenge();
 		error =
 			e instanceof Error && !("status" in e) ? e.message : store.message(e);
 	} finally {
@@ -129,7 +150,8 @@ function onkeydown(ev: KeyboardEvent) {
 }
 </script>
 
-<form class="ysg-editor" class:ysg-editor-reply={parentId !== null} class:ysg-editor-edit={isEdit} onsubmit={submit}>
+<form class="ysg-editor" class:ysg-editor-reply={parentId !== null} class:ysg-editor-edit={isEdit} onsubmit={submit}
+	onfocusin={warmUp}>
 	{#if !isEdit}
 		<div class="ysg-fields">
 			<input class="ysg-input" type="text" placeholder={t.name} required maxlength="50" autocomplete="nickname"

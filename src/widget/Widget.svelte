@@ -1,6 +1,5 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import Center from "./Center.svelte";
 import CommentItem from "./CommentItem.svelte";
 import Editor from "./Editor.svelte";
 import type { Store } from "./store.svelte";
@@ -9,6 +8,19 @@ import type { Sort } from "./types";
 let { store }: { store: Store } = $props();
 const t = $derived(store.t);
 const sorts: Sort[] = ["newest", "oldest", "popular"];
+
+// 通知パネルは開くまで要らないので別チャンク。ボタンに触れた時点で取りに行き始める。
+// 失敗したら覚えておかず、開き直したときに取り直す。デプロイを挟んで古い本体が
+// 使われているとチャンクがもう無いことがあるが、そのときは失敗を出すだけ (読み直せば直る)
+let center: Promise<typeof import("./Center.svelte")> | null = null;
+function loadCenter() {
+	center ??= import("./Center.svelte").catch((e) => {
+		center = null;
+		throw e;
+	});
+	return center;
+}
+const prefetchCenter = () => loadCenter().catch(() => {});
 
 onMount(() => {
 	const unwatch = store.watchHash();
@@ -38,14 +50,19 @@ onMount(() => {
 				</select>
 			{/if}
 			<button type="button" class="ysg-btn ysg-bell" class:ysg-active={store.centerOpen}
-				aria-expanded={store.centerOpen} onclick={() => store.toggleCenter()}>
+				aria-expanded={store.centerOpen} onpointerenter={prefetchCenter} onfocus={prefetchCenter}
+				onclick={() => store.toggleCenter()}>
 				{t.notifications}
 				{#if store.unread > 0}<span class="ysg-badge">{store.unread}</span>{/if}
 			</button>
 		</div>
 	</div>
 	{#if store.centerOpen}
-		<Center {store} />
+		{#await loadCenter() then { default: Center }}
+			<Center {store} />
+		{:catch}
+			<p class="ysg-error">{t.failed}</p>
+		{/await}
 	{/if}
 	<Editor {store} />
 	{#if store.error}<p class="ysg-error">{store.error}</p>{/if}

@@ -31,6 +31,7 @@
 | `data-css` | `true` | `false` なら同梱 CSS を差さない |
 | `data-auto` | `true` | `false` なら自動で描画せず `Yosegaki.init()` を待つ |
 | `data-admin-hash` | `#yosegaki-admin` | この hash を付けて開いたときだけ管理者ログインを出す |
+| `data-lazy` | `true` | 描画先が画面に近づく (手前 600px) まで本体を読まない。`false` ならすぐ読む。`#ysg-<id>` や管理者用の hash 付きで開いたときは待たない |
 
 SPA (swup など) でページを差し替えるなら `data-auto="false"` にして、遷移のたびに呼ぶ。
 
@@ -39,7 +40,22 @@ const instance = Yosegaki.init({ page: location.origin + location.pathname });
 instance.destroy();   // 次の遷移の前に
 ```
 
+`init()` はすぐ戻るが、描画は本体を読み終えてから (`lazy` なら画面に近づいてから)。待ちたければ `await instance.ready` で、`instance.store` もそれまでは `null`。
+
 一覧ページで件数だけ欲しいときは `Yosegaki.counts([url1, url2])` が `{url: 件数}` を返す。
+
+### 読み込みとキャッシュ
+
+`embed.js` は 2KB ほどの入口で、Svelte も描画も持たない。本体 (`/embed/app-<hash>.js` など) は `init()` のあと、既定ではコメント欄が画面に近づいたときに `import()` で読む。描画先が `display: none` の間は近づいたことにならないので、隠れたタブの中などに置くなら `data-lazy="false"` にする。通知パネルはさらに別のチャンクで開くときに、Cloudflare の Turnstile は投稿欄に触れたときに初めて取りに行く。
+
+本体は `embed.js` と同じ場所の `embed/` から読む。`embed.js` を自分でコピーして配るなら `embed/` も一緒に置く。
+
+- `embed.js` と `widget.css`: `max-age=300, stale-while-revalidate=86400` と ETag。切れても裏で取り直し、変わっていなければ 304
+- `/embed/*-<hash>.js`: 中身が変わればファイル名が変わるので `max-age=31536000, immutable`
+- `/embed/app.js`: 下の逃げ道。`no-cache` で毎回 ETag で確かめさせる
+- どれも br / gzip で返す (前段のプロキシに圧縮を任せない)。他のオリジンから `import()` されるので `Access-Control-Allow-Origin: *`
+
+デプロイ直後にキャッシュに残った古い `embed.js` が、もう無い本体を指すことがある。そのときはハッシュの無い `/embed/app.js` (今の本体を指す) から取り直す。古い本体がブラウザのキャッシュから使われた回に限り、通知パネルのチャンクが見つからず開けないことがある (次に読み直せば直る)。投稿に要るものは本体に入れてあるので、投稿はできる。
 
 ### 見た目を寄せる
 
@@ -214,7 +230,7 @@ http://localhost:5173 がデモページで、そのサーバ自身に埋め込�
 ```
 src/lib/server/   env / db (bun:sqlite) / comments (取得・投稿・削除) / markdown (marked + sanitize-html) / spam / auth / notify
 src/routes/api/   エンドポイント。1 ファイル 1 パス
-src/widget/       埋め込み (Svelte 5)。main.ts が入口、store.svelte.ts が状態、widget.css が同梱スタイル
-widget-dist/      vite.widget.config.ts で作る生成物 (git には入れない)。routes/embed.js が配る
+src/widget/       埋め込み (Svelte 5)。main.ts が embed.js (入口)、app.ts が本体、store.svelte.ts が状態、widget.css が同梱スタイル
+widget-dist/      vite.widget.config.ts で作る生成物 (git には入れない)。routes/embed.js と routes/embed/[file] が配る
 charts/yosegaki/  Helm チャート。CI が OCI で ghcr に push する
 ```
