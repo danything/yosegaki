@@ -14,7 +14,7 @@
         "@types/sanitize-html": "^2.16.2",
         "@typescript/native": "npm:typescript@7",
         "marked": "^18.0.14",
-        "nodemailer": "^10.0.14",
+        "nodemailer": "^10.0.15",
         "sanitize-html": "^2.18.0",
         "svelte": "^5.57.1",
         "svelte-check": "^4.7.6",
@@ -238,7 +238,7 @@
 
     "nanoid": ["nanoid@3.3.18", "", { "bin": { "nanoid": "bin/nanoid.cjs" } }, "sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w=="],
 
-    "nodemailer": ["nodemailer@10.0.14", "", {}, "sha512-eJoLFKg55fesSlzUekmfOv/SBXh4KUYT8oiQc2RLP0tfG0rbNMJBK7wgHJwXTJwqyKlSJMz9UzDZ4v+aHEvo8g=="],
+    "nodemailer": ["nodemailer@10.0.15", "", {}, "sha512-EUqp5PhtcsYXs9Fq/lS7s/8zlTrnBqmzZWzFFROrNikMiz+om/YRKMwqN907t+0A1KKyT8jd39CBUbFZmaZmcA=="],
 
     "obug": ["obug@2.1.4", "", {}, "sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA=="],
 
