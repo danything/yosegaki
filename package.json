@@ -21,7 +21,7 @@
 		"@types/nodemailer": "^8.0.2",
 		"@types/sanitize-html": "^2.16.2",
 		"@typescript/native": "npm:typescript@7",
-		"marked": "^18.0.14",
+		"marked": "^18.1.0",
 		"nodemailer": "^10.0.15",
 		"sanitize-html": "^2.18.0",
 		"svelte": "^5.57.1",
