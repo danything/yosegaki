@@ -10,7 +10,7 @@
 // CSS は widget.css を文字列で本体に抱え込み、実行時に <style> として差す
 // (data-css="false" で差さない)。
 // 配るのは static/ ではなく routes/embed.js と routes/embed/[file]: static だと
-// adapter-node が hooks の手前で返してしまい、Cache-Control も ETag も付けられない。
+// adapter-bun が hooks の手前で返してしまい、Cache-Control も ETag も付けられない。
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { build, defineConfig, type Plugin } from "vite";
 import pkg from "./package.json" with { type: "json" };
