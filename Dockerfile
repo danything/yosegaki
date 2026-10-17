@@ -18,4 +18,4 @@ RUN mkdir -p data && chown bun:bun data
 USER bun
 COPY --from=builder --chown=bun:bun /usr/src/app/package.json ./package.json
 COPY --from=builder --chown=bun:bun /usr/src/app/build ./build
-CMD [ "bun", "build/index.js" ]
+CMD [ "bun", "./build" ]
