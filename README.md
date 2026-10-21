@@ -20,24 +20,24 @@
 
 `<script>` の `data-*` 属性で調整する。全部省略できる。
 
-| 属性 | 既定 | 意味 |
-|---|---|---|
-| `data-target` | `#yosegaki` | 描画先のセレクタ |
-| `data-page` | `location.origin + pathname` | スレッドの鍵。クエリ文字列は含まれない |
-| `data-title` | `document.title` | 通知センターに出す記事名 |
-| `data-url` | `data-page` と同じ | 通知やメールからのリンク先 |
-| `data-lang` | `<html lang>` から判定 | `ja` / `en` |
-| `data-sort` | `newest` | `newest` / `oldest` / `popular` |
-| `data-css` | `true` | `false` なら同梱 CSS を差さない |
-| `data-auto` | `true` | `false` なら自動で描画せず `Yosegaki.init()` を待つ |
-| `data-admin-hash` | `#yosegaki-admin` | この hash を付けて開いたときだけ管理者ログインを出す |
-| `data-lazy` | `true` | 描画先が画面に近づく (手前 600px) まで本体を読まない。`false` ならすぐ読む。`#ysg-<id>` や管理者用の hash 付きで開いたときは待たない |
+| 属性              | 既定                         | 意味                                                                                                                                 |
+| ----------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `data-target`     | `#yosegaki`                  | 描画先のセレクタ                                                                                                                     |
+| `data-page`       | `location.origin + pathname` | スレッドの鍵。クエリ文字列は含まれない                                                                                               |
+| `data-title`      | `document.title`             | 通知センターに出す記事名                                                                                                             |
+| `data-url`        | `data-page` と同じ           | 通知やメールからのリンク先                                                                                                           |
+| `data-lang`       | `<html lang>` から判定       | `ja` / `en`                                                                                                                          |
+| `data-sort`       | `newest`                     | `newest` / `oldest` / `popular`                                                                                                      |
+| `data-css`        | `true`                       | `false` なら同梱 CSS を差さない                                                                                                      |
+| `data-auto`       | `true`                       | `false` なら自動で描画せず `Yosegaki.init()` を待つ                                                                                  |
+| `data-admin-hash` | `#yosegaki-admin`            | この hash を付けて開いたときだけ管理者ログインを出す                                                                                 |
+| `data-lazy`       | `true`                       | 描画先が画面に近づく (手前 600px) まで本体を読まない。`false` ならすぐ読む。`#ysg-<id>` や管理者用の hash 付きで開いたときは待たない |
 
 SPA (swup など) でページを差し替えるなら `data-auto="false"` にして、遷移のたびに呼ぶ。
 
 ```js
 const instance = Yosegaki.init({ page: location.origin + location.pathname });
-instance.destroy();   // 次の遷移の前に
+instance.destroy(); // 次の遷移の前に
 ```
 
 `init()` はすぐ戻るが、描画は本体を読み終えてから (`lazy` なら画面に近づいてから)。待ちたければ `await instance.ready` で、`instance.store` もそれまでは `null`。
@@ -49,7 +49,6 @@ instance.destroy();   // 次の遷移の前に
 `embed.js` は 2KB ほどの入口で、Svelte も描画も持たない。本体 (`/embed/app-<hash>.js` など) は `init()` のあと、既定ではコメント欄が画面に近づいたときに `import()` で読む。描画先が `display: none` の間は近づいたことにならないので、隠れたタブの中などに置くなら `data-lazy="false"` にする。通知パネルはさらに別のチャンクで開くときに、Cloudflare の Turnstile は投稿欄に触れたときに初めて取りに行く。
 
 本体は `embed.js` と同じ場所の `embed/` から読む。`embed.js` を自分でコピーして配るなら `embed/` も一緒に置く。
-
 - `embed.js` と `widget.css`: `max-age=300, stale-while-revalidate=86400` と ETag。切れても裏で取り直し、変わっていなければ 304
 - `/embed/*-<hash>.js`: 中身が変わればファイル名が変わるので `max-age=31536000, immutable`
 - `/embed/app.js`: 下の逃げ道。`no-cache` で毎回 ETag で確かめさせる
@@ -61,11 +60,11 @@ instance.destroy();   // 次の遷移の前に
 
 ```css
 #yosegaki {
-	--ysg-accent: var(--primary);      /* ボタン・リンク */
-	--ysg-accent-fg: #fff;             /* その上の文字 */
+	--ysg-accent: var(--primary); /* ボタン・リンク */
+	--ysg-accent-fg: #fff; /* その上の文字 */
 	--ysg-radius: 0.75rem;
-	--ysg-line: rgb(0 0 0 / 0.1);      /* 罫線 */
-	--ysg-surface: rgb(0 0 0 / 0.04);  /* 入力欄などの背景 */
+	--ysg-line: rgb(0 0 0 / 0.1); /* 罫線 */
+	--ysg-surface: rgb(0 0 0 / 0.04); /* 入力欄などの背景 */
 }
 ```
 
@@ -79,30 +78,30 @@ docker run -d -p 3000:3000 -v yosegaki:/usr/src/app/data \
   ghcr.io/danything/yosegaki
 ```
 
-| 環境変数 | 既定 | 意味 |
-|---|---|---|
-| `ALLOWED_ORIGINS` | (無し) | 埋め込みを許すオリジン。カンマ区切り。空のままだと起動しない |
-| `ALLOW_ANY_ORIGIN` | `false` | `true` なら `ALLOWED_ORIGINS` が空でも起動する。誰でも埋め込める状態になる |
-| `OIDC_ISSUER` / `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` | (無効) | 管理者のログイン。3 つ揃うと有効で、無ければ管理機能ごと消える。redirect URI は `https://<host>/admin/callback` |
-| `OIDC_ADMIN_GROUPS` | (無し) | 管理者にするグループ。`groups` / `roles` クレームに含まれる値のカンマ区切り (Entra ならグループの Object ID) |
-| `OIDC_ADMINS` | (無し) | 管理者にする個人。email / preferred_username / sub のカンマ区切り |
-| `OIDC_LABEL` | `SSO` | ログインボタンの表示 (「〜 でログイン」) |
-| `ADMIN_NAME` / `ADMIN_EMAIL` | `admin` / (無し) | 管理者の表示名と、新着を受け取るメール |
-| `SECRET` | 起動ごとに乱数 | トークン署名と IP ハッシュの鍵。無いと再起動でログアウトする |
-| `ADMIN_TOKEN_DAYS` | `7` | 管理者トークンの有効期間 (日) |
-| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET` | (無し) | [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) の鍵。両方あれば投稿に人間の確認を挟む。見た目は必要なときだけ出る |
-| `MODERATION` | `none` | `none`: 承認なしで公開 / `links`: リンクが `MAX_LINKS` (2) を超えたら承認待ち / `all`: 全部承認待ち |
-| `BLOCK_WORDS` | (無し) | 含んでいたら承認待ちにする語。カンマ区切り |
-| `MAX_LENGTH` | `4000` | 本文の上限 |
-| `RATE_LIMIT_MAX` / `RATE_LIMIT_WINDOW` | `5` / `600` | 同じ IP から 600 秒に 5 件まで |
-| `OWNER_EDIT_MINUTES` | `60` | 本人が編集・削除できる時間。`0` で無期限 |
-| `AVATAR` | `gravatar` | `none` でアバターを出さない |
-| `ALLOW_IMAGES` | `false` | Markdown の画像を許す |
-| `CLIENT_IP_HEADER` | (無し) | 接続元 IP を取るヘッダ。Cloudflare なら `CF-Connecting-IP` |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` / `SMTP_SECURE` | (無し) | 通知メール。`SMTP_HOST` が無ければ送らない |
-| `WEBHOOK_URL` | (無し) | 新着と承認を JSON で POST する先 |
-| `SITE_NAME` | `yosegaki` | メールの件名 |
-| `DB_PATH` | `data/yosegaki.db` | SQLite の置き場 |
+| 環境変数                                                                            | 既定               | 意味                                                                                                                                    |
+| ----------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALLOWED_ORIGINS`                                                                   | (無し)             | 埋め込みを許すオリジン。カンマ区切り。空のままだと起動しない                                                                            |
+| `ALLOW_ANY_ORIGIN`                                                                  | `false`            | `true` なら `ALLOWED_ORIGINS` が空でも起動する。誰でも埋め込める状態になる                                                              |
+| `OIDC_ISSUER` / `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET`                             | (無効)             | 管理者のログイン。3 つ揃うと有効で、無ければ管理機能ごと消える。redirect URI は `https://<host>/admin/callback`                         |
+| `OIDC_ADMIN_GROUPS`                                                                 | (無し)             | 管理者にするグループ。`groups` / `roles` クレームに含まれる値のカンマ区切り (Entra ならグループの Object ID)                            |
+| `OIDC_ADMINS`                                                                       | (無し)             | 管理者にする個人。email / preferred_username / sub のカンマ区切り                                                                       |
+| `OIDC_LABEL`                                                                        | `SSO`              | ログインボタンの表示 (「〜 でログイン」)                                                                                                |
+| `ADMIN_NAME` / `ADMIN_EMAIL`                                                        | `admin` / (無し)   | 管理者の表示名と、新着を受け取るメール                                                                                                  |
+| `SECRET`                                                                            | 起動ごとに乱数     | トークン署名と IP ハッシュの鍵。無いと再起動でログアウトする                                                                            |
+| `ADMIN_TOKEN_DAYS`                                                                  | `7`                | 管理者トークンの有効期間 (日)                                                                                                           |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET`                                           | (無し)             | [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) の鍵。両方あれば投稿に人間の確認を挟む。見た目は必要なときだけ出る |
+| `MODERATION`                                                                        | `none`             | `none`: 承認なしで公開 / `links`: リンクが `MAX_LINKS` (2) を超えたら承認待ち / `all`: 全部承認待ち                                     |
+| `BLOCK_WORDS`                                                                       | (無し)             | 含んでいたら承認待ちにする語。カンマ区切り                                                                                              |
+| `MAX_LENGTH`                                                                        | `4000`             | 本文の上限                                                                                                                              |
+| `RATE_LIMIT_MAX` / `RATE_LIMIT_WINDOW`                                              | `5` / `600`        | 同じ IP から 600 秒に 5 件まで                                                                                                          |
+| `OWNER_EDIT_MINUTES`                                                                | `60`               | 本人が編集・削除できる時間。`0` で無期限                                                                                                |
+| `AVATAR`                                                                            | `gravatar`         | `none` でアバターを出さない                                                                                                             |
+| `ALLOW_IMAGES`                                                                      | `false`            | Markdown の画像を許す                                                                                                                   |
+| `CLIENT_IP_HEADER`                                                                  | (無し)             | 接続元 IP を取るヘッダ。Cloudflare なら `CF-Connecting-IP`                                                                              |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` / `SMTP_SECURE` | (無し)             | 通知メール。`SMTP_HOST` が無ければ送らない                                                                                              |
+| `WEBHOOK_URL`                                                                       | (無し)             | 新着と承認を JSON で POST する先                                                                                                        |
+| `SITE_NAME`                                                                         | `yosegaki`         | メールの件名                                                                                                                            |
+| `DB_PATH`                                                                           | `data/yosegaki.db` | SQLite の置き場                                                                                                                         |
 
 ### スパム
 
@@ -124,7 +123,6 @@ IdP 側では redirect URI に `https://<host>/admin/callback` を登録し、sc
 ### 埋め込みの範囲
 
 `ALLOWED_ORIGINS` に書いたオリジンからしか使えない。空のままでは起動しないので、誰でも埋め込める状態に事故で出ることはない (承知の上なら `ALLOW_ANY_ORIGIN=true`)。効き方は 3 つ。
-
 - **CORS**: 許可外オリジンからのプリフライトは 403。ウィジェットは常に `X-Visitor` を送るのでプリフライトが必ず起き、許可していないサイトに貼っても動かない。プリフライトの要らない形 (`text/plain` の POST など) で抜けられないよう、許可外オリジンからの書き込みはハンドラの手前で 403 にする
 - **スレッドの鍵**: `page` は http(s) の URL に限り、オリジンをサーバ側で照合する。クエリと hash は落として正規化するので、同じ記事のスレッドが分裂しない
 - **管理者ログイン**: トークンを `postMessage` で返す先も許可オリジンだけ
@@ -194,24 +192,23 @@ httpRoute:
 ## API
 
 すべて `/api/v1` 配下。エラーは常に `{"error": "rate_limited", "message": "..."}` の形。認証は 2 つのヘッダだけ。
-
 - `X-Visitor: <端末ごとの乱数>` … 本人判定 (いいね、編集、自分宛ての返信)
 - `Authorization: Bearer <token>` … 管理者
 
-| メソッド | パス | 中身 |
-|---|---|---|
-| GET | `/comments?page=&sort=&limit=&offset=` | ページのコメント。返信も同じ配列に平らに入る (`parent_id` / `root_id`)。承認待ちは本人と管理者にだけ |
-| POST | `/comments` | `{page, title, url, parent_id, name, email, website, body, notify}`。`hp` が埋まっていたら bot とみなして捨てる |
-| GET / PATCH / DELETE | `/comments/:id` | 本人 (期限内) か管理者。返信が付いていれば墓標として残り、無ければ消える |
-| PUT | `/comments/:id/like` | `{value: true\|false}`。何度送っても同じ |
-| POST | `/preview` | `{body}` → `{body_html}` |
-| GET | `/count?page=a&page=b` | 承認済みの件数 |
-| GET | `/recent?before=&limit=` | サイト全体の新着 |
-| GET | `/me/comments` `/me/replies` | 自分の投稿、自分宛ての返信 |
-| GET | `/admin/me` `/admin/pending` `/admin/comments?q=&status=` | 管理者の確認、承認待ち、横断検索 |
-| GET | `/admin/login?origin=` `/admin/callback` | (API 外) OIDC の入口と戻り先。ポップアップで使う |
-| POST | `/admin/comments/:id/approve` | 承認 |
-| GET | `/config` `/health` | 公開設定、死活 |
+| メソッド             | パス                                                      | 中身                                                                                                            |
+| -------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| GET                  | `/comments?page=&sort=&limit=&offset=`                    | ページのコメント。返信も同じ配列に平らに入る (`parent_id` / `root_id`)。承認待ちは本人と管理者にだけ            |
+| POST                 | `/comments`                                               | `{page, title, url, parent_id, name, email, website, body, notify}`。`hp` が埋まっていたら bot とみなして捨てる |
+| GET / PATCH / DELETE | `/comments/:id`                                           | 本人 (期限内) か管理者。返信が付いていれば墓標として残り、無ければ消える                                        |
+| PUT                  | `/comments/:id/like`                                      | `{value: true\|false}`。何度送っても同じ                                                                        |
+| POST                 | `/preview`                                                | `{body}` → `{body_html}`                                                                                        |
+| GET                  | `/count?page=a&page=b`                                    | 承認済みの件数                                                                                                  |
+| GET                  | `/recent?before=&limit=`                                  | サイト全体の新着                                                                                                |
+| GET                  | `/me/comments` `/me/replies`                              | 自分の投稿、自分宛ての返信                                                                                      |
+| GET                  | `/admin/me` `/admin/pending` `/admin/comments?q=&status=` | 管理者の確認、承認待ち、横断検索                                                                                |
+| GET                  | `/admin/login?origin=` `/admin/callback`                  | (API 外) OIDC の入口と戻り先。ポップアップで使う                                                                |
+| POST                 | `/admin/comments/:id/approve`                             | 承認                                                                                                            |
+| GET                  | `/config` `/health`                                       | 公開設定、死活                                                                                                  |
 
 一覧系は `before=<id>` で続きを取る (新しい順)。本文は `body_html` (サニタイズ済み) と `body_md` の両方が返る。
 
