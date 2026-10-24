@@ -5,5 +5,4 @@ sortImports = true
 ignorePatterns = [
   # Helm のテンプレートは Go のテンプレートで、YAML として読めない
   "charts/*/templates/",
-  "renovate.json",
 ]
