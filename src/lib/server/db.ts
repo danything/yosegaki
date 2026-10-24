@@ -7,19 +7,19 @@ import { env } from "./env";
 let instance: DatabaseType | undefined;
 
 export function db(): DatabaseType {
-	if (instance) return instance;
-	// 静的 import にすると node で動く vite build がここで転ぶ。実行時 (bun) にだけ
-	// 読む。Vite の dev ランナーは ESM なので素の require は無く、作って使う
-	const { Database } = createRequire(import.meta.url)(
-		"bun:sqlite",
-	) as typeof import("bun:sqlite");
-	mkdirSync(dirname(env.dbPath), { recursive: true });
-	instance = new Database(env.dbPath);
-	instance.exec("PRAGMA journal_mode = WAL;");
-	instance.exec("PRAGMA busy_timeout = 5000;");
-	instance.exec("PRAGMA foreign_keys = ON;");
+  if (instance) return instance;
+  // 静的 import にすると node で動く vite build がここで転ぶ。実行時 (bun) にだけ
+  // 読む。Vite の dev ランナーは ESM なので素の require は無く、作って使う
+  const { Database } = createRequire(import.meta.url)(
+    "bun:sqlite",
+  ) as typeof import("bun:sqlite");
+  mkdirSync(dirname(env.dbPath), { recursive: true });
+  instance = new Database(env.dbPath);
+  instance.exec("PRAGMA journal_mode = WAL;");
+  instance.exec("PRAGMA busy_timeout = 5000;");
+  instance.exec("PRAGMA foreign_keys = ON;");
 
-	instance.run(`
+  instance.run(`
 		CREATE TABLE IF NOT EXISTS page (
 			key TEXT PRIMARY KEY,
 			title TEXT NOT NULL DEFAULT '',
@@ -27,10 +27,10 @@ export function db(): DatabaseType {
 			created_at INTEGER NOT NULL
 		)
 	`);
-	// root_id はスレッドの先頭 (トップレベル) のコメント。返信の返信も同じ
-	// root_id を持つので、1 スレッドを 1 クエリで引ける。parent_id は
-	// 「誰に返したか」の表示用。
-	instance.run(`
+  // root_id はスレッドの先頭 (トップレベル) のコメント。返信の返信も同じ
+  // root_id を持つので、1 スレッドを 1 クエリで引ける。parent_id は
+  // 「誰に返したか」の表示用。
+  instance.run(`
 		CREATE TABLE IF NOT EXISTS comment (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			page_key TEXT NOT NULL REFERENCES page(key),
@@ -53,23 +53,23 @@ export function db(): DatabaseType {
 			updated_at INTEGER NOT NULL
 		)
 	`);
-	instance.run(
-		"CREATE INDEX IF NOT EXISTS comment_page ON comment(page_key, root_id, created_at)",
-	);
-	instance.run("CREATE INDEX IF NOT EXISTS comment_root ON comment(root_id)");
-	instance.run(
-		"CREATE INDEX IF NOT EXISTS comment_parent ON comment(parent_id)",
-	);
-	instance.run(
-		"CREATE INDEX IF NOT EXISTS comment_visitor ON comment(visitor_hash)",
-	);
-	instance.run(
-		"CREATE INDEX IF NOT EXISTS comment_status ON comment(status, id)",
-	);
-	instance.run(
-		"CREATE INDEX IF NOT EXISTS comment_ip ON comment(ip_hash, created_at)",
-	);
-	instance.run(`
+  instance.run(
+    "CREATE INDEX IF NOT EXISTS comment_page ON comment(page_key, root_id, created_at)",
+  );
+  instance.run("CREATE INDEX IF NOT EXISTS comment_root ON comment(root_id)");
+  instance.run(
+    "CREATE INDEX IF NOT EXISTS comment_parent ON comment(parent_id)",
+  );
+  instance.run(
+    "CREATE INDEX IF NOT EXISTS comment_visitor ON comment(visitor_hash)",
+  );
+  instance.run(
+    "CREATE INDEX IF NOT EXISTS comment_status ON comment(status, id)",
+  );
+  instance.run(
+    "CREATE INDEX IF NOT EXISTS comment_ip ON comment(ip_hash, created_at)",
+  );
+  instance.run(`
 		CREATE TABLE IF NOT EXISTS vote (
 			comment_id INTEGER NOT NULL REFERENCES comment(id) ON DELETE CASCADE,
 			visitor_hash TEXT NOT NULL,
@@ -77,5 +77,5 @@ export function db(): DatabaseType {
 			PRIMARY KEY (comment_id, visitor_hash)
 		)
 	`);
-	return instance;
+  return instance;
 }

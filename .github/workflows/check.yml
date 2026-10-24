@@ -14,7 +14,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun i --frozen-lockfile
       - run: bun run build:widget
-      - run: bunx biome ci
+      - run: bun run lint
       - run: bunx svelte-kit sync && bunx svelte-check --tsconfig ./tsconfig.json --tsgo
       - run: bun test
       - run: helm lint charts/yosegaki

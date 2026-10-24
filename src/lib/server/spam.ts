@@ -6,22 +6,22 @@ import { countLinks } from "./markdown";
  * bot の遮断は Turnstile とハニーポットの仕事で、ここは人間の投稿の振り分け。
  */
 export function decideStatus(
-	opts: { bodyMd: string; bodyHtml: string; admin: boolean },
-	rules: {
-		moderation: "all" | "links" | "none";
-		maxLinks: number;
-		blockWords: readonly string[];
-	} = env,
+  opts: { bodyMd: string; bodyHtml: string; admin: boolean },
+  rules: {
+    moderation: "all" | "links" | "none";
+    maxLinks: number;
+    blockWords: readonly string[];
+  } = env,
 ): "approved" | "pending" {
-	if (opts.admin) return "approved";
-	if (rules.moderation === "all") return "pending";
-	const lower = opts.bodyMd.toLowerCase();
-	if (rules.blockWords.some((w) => lower.includes(w.toLowerCase())))
-		return "pending";
-	if (
-		rules.moderation === "links" &&
-		countLinks(opts.bodyHtml) > rules.maxLinks
-	)
-		return "pending";
-	return "approved";
+  if (opts.admin) return "approved";
+  if (rules.moderation === "all") return "pending";
+  const lower = opts.bodyMd.toLowerCase();
+  if (rules.blockWords.some((w) => lower.includes(w.toLowerCase())))
+    return "pending";
+  if (
+    rules.moderation === "links" &&
+    countLinks(opts.bodyHtml) > rules.maxLinks
+  )
+    return "pending";
+  return "approved";
 }

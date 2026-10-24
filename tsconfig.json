@@ -1,10 +1,10 @@
 {
-	"extends": "$app/tsconfig",
-	"compilerOptions": {
-		"rewriteRelativeImportExtensions": true,
-		"sourceMap": true,
-		"strict": true,
-		"types": ["bun", "$app/types"]
-	},
-	"include": ["src", "tests", "vite.config.ts"]
+  "extends": "$app/tsconfig",
+  "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
+    "sourceMap": true,
+    "strict": true,
+    "types": ["bun", "$app/types"]
+  },
+  "include": ["src", "tests", "vite.config.ts"]
 }

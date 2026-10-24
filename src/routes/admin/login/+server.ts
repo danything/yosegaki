@@ -4,15 +4,15 @@ import { loginUrl } from "#lib/server/oidc.js";
 
 /** ?origin=<ウィジェットのオリジン>。IdP へ飛ばす */
 export const GET: RequestHandler = async (event) => {
-	let url: string;
-	try {
-		url = await loginUrl(event);
-	} catch (e) {
-		if (e instanceof ApiError)
-			return json({ error: e.code, message: e.message }, e.status);
-		console.error("oidc login", e);
-		return json({ error: "internal", message: "internal server error" }, 500);
-	}
-	// IdP は別オリジン。3 は外への転送を明示させる
-	redirect(302, url, { external: true });
+  let url: string;
+  try {
+    url = await loginUrl(event);
+  } catch (e) {
+    if (e instanceof ApiError)
+      return json({ error: e.code, message: e.message }, e.status);
+    console.error("oidc login", e);
+    return json({ error: "internal", message: "internal server error" }, 500);
+  }
+  // IdP は別オリジン。3 は外への転送を明示させる
+  redirect(302, url, { external: true });
 };
