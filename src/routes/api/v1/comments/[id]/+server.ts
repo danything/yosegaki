@@ -5,7 +5,7 @@ import {
   updateComment,
 } from "#lib/server/comments.js";
 import { env } from "#lib/server/env.js";
-import { ApiError, api, body, idParam, json, str } from "#lib/server/http.js";
+import { api, ApiError, body, idParam, json, str } from "#lib/server/http.js";
 import { render } from "#lib/server/markdown.js";
 
 function viewerOf(event: { locals: App.Locals }) {

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { countLinks, render } from "../src/lib/server/markdown";
 
 describe("render", () => {

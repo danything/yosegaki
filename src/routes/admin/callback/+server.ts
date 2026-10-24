@@ -1,4 +1,5 @@
 import type { RequestHandler } from "@sveltejs/kit";
+
 import { ApiError } from "#lib/server/http.js";
 import { handleCallback } from "#lib/server/oidc.js";
 

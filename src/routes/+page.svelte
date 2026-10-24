@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { page } from "$app/state";
+  import { onMount } from "svelte";
 
   // 動作確認用のページ。埋め込みの書き方そのもの
   let dark = $state(false);

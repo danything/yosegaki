@@ -1,4 +1,5 @@
 import type { RequestEvent, RequestHandler } from "@sveltejs/kit";
+
 import { originAllowed } from "./env";
 
 export class ApiError extends Error {

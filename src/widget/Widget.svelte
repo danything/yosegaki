@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+
   import CommentItem from "./CommentItem.svelte";
   import Editor from "./Editor.svelte";
   import type { Store } from "./store.svelte";

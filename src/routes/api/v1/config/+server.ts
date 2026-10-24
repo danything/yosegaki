@@ -1,7 +1,8 @@
+import { version } from "$app/env";
+
 import { env } from "#lib/server/env.js";
 import { api } from "#lib/server/http.js";
 import { oidcEnabled } from "#lib/server/oidc.js";
-import { version } from "$app/env";
 
 /** ウィジェットが最初に読む公開設定 */
 export const GET = api(() => ({
