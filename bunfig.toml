@@ -3,7 +3,6 @@
 # import を並べ替える (組の分け方は既定のまま。副作用だけの import は動かさない)
 sortImports = true
 ignorePatterns = [
-  "static/",
   # Helm のテンプレートは Go のテンプレートで、YAML として読めない
   "charts/*/templates/",
   "renovate.json",
