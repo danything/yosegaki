@@ -1,5 +1,5 @@
 import { approveComment, getComment, toPublic } from "#lib/server/comments.js";
-import { ApiError, api, idParam, requireAdmin } from "#lib/server/http.js";
+import { api, ApiError, idParam, requireAdmin } from "#lib/server/http.js";
 import { onApproved } from "#lib/server/notify.js";
 
 export const POST = api((event) => {

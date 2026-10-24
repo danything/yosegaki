@@ -3,7 +3,9 @@
 // id_token は token endpoint から TLS で直接受け取るので署名は見ない
 // (OIDC Core 3.1.3.7)。代わりに aud / iss / exp / nonce を admit() で確かめる。
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+
 import type { RequestEvent } from "@sveltejs/kit";
+
 import { issueAdminToken } from "./auth";
 import { env, originAllowed } from "./env";
 import { ApiError } from "./http";

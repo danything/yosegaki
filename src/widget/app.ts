@@ -2,10 +2,12 @@
 // Svelte のランタイムと描画はここから先にだけあり、通知パネルと Turnstile は
 // さらに使うときに別チャンクで読む。
 import { mount, unmount } from "svelte";
+
 import { detectLang, type Lang } from "./i18n";
 import { Store } from "./store.svelte";
 import type { Sort } from "./types";
 import Widget from "./Widget.svelte";
+
 import css from "./widget.css?inline";
 
 /** main.ts が解決し終えた設定。server は末尾の / を落としてある */

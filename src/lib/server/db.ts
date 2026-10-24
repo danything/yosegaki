@@ -2,6 +2,7 @@ import type { Database as DatabaseType } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname } from "node:path";
+
 import { env } from "./env";
 
 let instance: DatabaseType | undefined;

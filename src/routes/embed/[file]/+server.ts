@@ -1,4 +1,5 @@
 import { error } from "@sveltejs/kit";
+
 import { asset } from "#lib/server/asset.js";
 
 // embed.js が import() で読む本体とチャンク。ビルド時に全部抱え込む

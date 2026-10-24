@@ -1,9 +1,10 @@
+import { building, dev } from "$app/env";
 import type { Handle } from "@sveltejs/kit/hooks";
+
 import { verifyAdminToken, visitorHash } from "#lib/server/auth.js";
 import { db } from "#lib/server/db.js";
 import { assertOriginPolicy, env, originAllowed } from "#lib/server/env.js";
 import { json } from "#lib/server/http.js";
-import { building, dev } from "$app/env";
 
 // 設定ミスや壊れた DB は最初のリクエストではなく起動時に落とす
 if (!building) {

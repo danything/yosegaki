@@ -1,4 +1,5 @@
-import { type RequestHandler, redirect } from "@sveltejs/kit";
+import { redirect, type RequestHandler } from "@sveltejs/kit";
+
 import { ApiError, json } from "#lib/server/http.js";
 import { loginUrl } from "#lib/server/oidc.js";
 

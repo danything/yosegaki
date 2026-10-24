@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
+
   import type { Store } from "./store.svelte";
   import { Challenge, loadTurnstile } from "./turnstile";
 
