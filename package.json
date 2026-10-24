@@ -1,36 +1,38 @@
 {
-	"name": "yosegaki",
-	"version": "0.1.0",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"dev": "bun run build:widget && bun --bun vite dev",
-		"dev:widget": "vite build -c vite.widget.config.ts --watch",
-		"build:widget": "svelte-kit sync && vite build -c vite.widget.config.ts",
-		"build": "bun run build:widget && bun --bun vite build",
-		"start": "bun ./build",
-		"test": "bun test",
-		"check": "biome check --write && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --tsgo"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^2.6.2",
-		"@sveltejs/adapter-bun": "^1.0.0",
-		"@sveltejs/kit": "^3.1.0",
-		"@sveltejs/vite-plugin-svelte": "^7.3.1",
-		"@types/bun": "^1.4.4",
-		"@types/nodemailer": "^8.0.2",
-		"@types/sanitize-html": "^2.16.2",
-		"@typescript/native": "npm:typescript@7",
-		"marked": "^18.1.1",
-		"nodemailer": "^10.2.1",
-		"sanitize-html": "^2.18.1",
-		"svelte": "^5.57.2",
-		"svelte-check": "^4.7.7",
-		"typescript": "~6.0.3",
-		"vite": "^8.3.5"
-	},
-	"imports": {
-		"#lib": "./src/lib/index.js",
-		"#lib/*": "./src/lib/*"
-	}
+  "name": "yosegaki",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run build:widget && bun --bun vite dev",
+    "dev:widget": "vite build -c vite.widget.config.ts --watch",
+    "build:widget": "svelte-kit sync && vite build -c vite.widget.config.ts",
+    "build": "bun run build:widget && bun --bun vite build",
+    "start": "bun ./build",
+    "test": "bun test",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --tsgo",
+    "lint": "oxlint && bun fmt --check",
+    "format": "oxlint --fix && bun fmt"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-bun": "^1.0.0",
+    "@sveltejs/kit": "^3.1.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@types/bun": "^1.4.4",
+    "@types/nodemailer": "^8.0.2",
+    "@types/sanitize-html": "^2.16.2",
+    "@typescript/native": "npm:typescript@7",
+    "marked": "^18.1.1",
+    "nodemailer": "^10.2.1",
+    "oxlint": "^1.89.0",
+    "sanitize-html": "^2.18.1",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.5"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
+  }
 }

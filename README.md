@@ -49,6 +49,7 @@ instance.destroy(); // 次の遷移の前に
 `embed.js` は 2KB ほどの入口で、Svelte も描画も持たない。本体 (`/embed/app-<hash>.js` など) は `init()` のあと、既定ではコメント欄が画面に近づいたときに `import()` で読む。描画先が `display: none` の間は近づいたことにならないので、隠れたタブの中などに置くなら `data-lazy="false"` にする。通知パネルはさらに別のチャンクで開くときに、Cloudflare の Turnstile は投稿欄に触れたときに初めて取りに行く。
 
 本体は `embed.js` と同じ場所の `embed/` から読む。`embed.js` を自分でコピーして配るなら `embed/` も一緒に置く。
+
 - `embed.js` と `widget.css`: `max-age=300, stale-while-revalidate=86400` と ETag。切れても裏で取り直し、変わっていなければ 304
 - `/embed/*-<hash>.js`: 中身が変わればファイル名が変わるので `max-age=31536000, immutable`
 - `/embed/app.js`: 下の逃げ道。`no-cache` で毎回 ETag で確かめさせる
@@ -60,11 +61,11 @@ instance.destroy(); // 次の遷移の前に
 
 ```css
 #yosegaki {
-	--ysg-accent: var(--primary); /* ボタン・リンク */
-	--ysg-accent-fg: #fff; /* その上の文字 */
-	--ysg-radius: 0.75rem;
-	--ysg-line: rgb(0 0 0 / 0.1); /* 罫線 */
-	--ysg-surface: rgb(0 0 0 / 0.04); /* 入力欄などの背景 */
+  --ysg-accent: var(--primary); /* ボタン・リンク */
+  --ysg-accent-fg: #fff; /* その上の文字 */
+  --ysg-radius: 0.75rem;
+  --ysg-line: rgb(0 0 0 / 0.1); /* 罫線 */
+  --ysg-surface: rgb(0 0 0 / 0.04); /* 入力欄などの背景 */
 }
 ```
 
@@ -123,6 +124,7 @@ IdP 側では redirect URI に `https://<host>/admin/callback` を登録し、sc
 ### 埋め込みの範囲
 
 `ALLOWED_ORIGINS` に書いたオリジンからしか使えない。空のままでは起動しないので、誰でも埋め込める状態に事故で出ることはない (承知の上なら `ALLOW_ANY_ORIGIN=true`)。効き方は 3 つ。
+
 - **CORS**: 許可外オリジンからのプリフライトは 403。ウィジェットは常に `X-Visitor` を送るのでプリフライトが必ず起き、許可していないサイトに貼っても動かない。プリフライトの要らない形 (`text/plain` の POST など) で抜けられないよう、許可外オリジンからの書き込みはハンドラの手前で 403 にする
 - **スレッドの鍵**: `page` は http(s) の URL に限り、オリジンをサーバ側で照合する。クエリと hash は落として正規化するので、同じ記事のスレッドが分裂しない
 - **管理者ログイン**: トークンを `postMessage` で返す先も許可オリジンだけ
@@ -192,6 +194,7 @@ httpRoute:
 ## API
 
 すべて `/api/v1` 配下。エラーは常に `{"error": "rate_limited", "message": "..."}` の形。認証は 2 つのヘッダだけ。
+
 - `X-Visitor: <端末ごとの乱数>` … 本人判定 (いいね、編集、自分宛ての返信)
 - `Authorization: Bearer <token>` … 管理者
 
@@ -218,7 +221,8 @@ httpRoute:
 bun i
 bun run dev          # 埋め込みを一度ビルドしてから SvelteKit の dev サーバ
 bun run dev:widget   # 別ターミナルで埋め込みを監視ビルド
-bun run check        # biome + svelte-check
+bun run lint         # oxlint + bun fmt --check (整形は bun run format)
+bun run check        # svelte-check
 bun test
 ```
 

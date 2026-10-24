@@ -1,80 +1,95 @@
 <script lang="ts">
-import { onMount } from "svelte";
-import CommentItem from "./CommentItem.svelte";
-import Editor from "./Editor.svelte";
-import type { Store } from "./store.svelte";
-import type { Sort } from "./types";
+  import { onMount } from "svelte";
+  import CommentItem from "./CommentItem.svelte";
+  import Editor from "./Editor.svelte";
+  import type { Store } from "./store.svelte";
+  import type { Sort } from "./types";
 
-let { store }: { store: Store } = $props();
-const t = $derived(store.t);
-const sorts: Sort[] = ["newest", "oldest", "popular"];
+  let { store }: { store: Store } = $props();
+  const t = $derived(store.t);
+  const sorts: Sort[] = ["newest", "oldest", "popular"];
 
-// 通知パネルは開くまで要らないので別チャンク。ボタンに触れた時点で取りに行き始める。
-// 失敗したら覚えておかず、開き直したときに取り直す。デプロイを挟んで古い本体が
-// 使われているとチャンクがもう無いことがあるが、そのときは失敗を出すだけ (読み直せば直る)
-let center: Promise<typeof import("./Center.svelte")> | null = null;
-function loadCenter() {
-	center ??= import("./Center.svelte").catch((e) => {
-		center = null;
-		throw e;
-	});
-	return center;
-}
-const prefetchCenter = () => loadCenter().catch(() => {});
+  // 通知パネルは開くまで要らないので別チャンク。ボタンに触れた時点で取りに行き始める。
+  // 失敗したら覚えておかず、開き直したときに取り直す。デプロイを挟んで古い本体が
+  // 使われているとチャンクがもう無いことがあるが、そのときは失敗を出すだけ (読み直せば直る)
+  let center: Promise<typeof import("./Center.svelte")> | null = null;
+  function loadCenter() {
+    center ??= import("./Center.svelte").catch((e) => {
+      center = null;
+      throw e;
+    });
+    return center;
+  }
+  const prefetchCenter = () => loadCenter().catch(() => {});
 
-onMount(() => {
-	const unwatch = store.watchHash();
-	store.init().then(() => {
-		// 管理者用のリンクで来たら、ログインボタンのある通知パネルを開いておく
-		if (store.adminHint && !store.admin) store.centerOpen = true;
-		// #ysg-<id> で来たらそこまで飛ぶ
-		const m = location.hash.match(/^#ysg-(\d+)$/);
-		if (!m) return;
-		const el = document.getElementById(`ysg-${m[1]}`);
-		if (!el) return;
-		el.scrollIntoView({ block: "center" });
-		el.classList.add("ysg-flash");
-		setTimeout(() => el.classList.remove("ysg-flash"), 2000);
-	});
-	return unwatch;
-});
+  onMount(() => {
+    const unwatch = store.watchHash();
+    store.init().then(() => {
+      // 管理者用のリンクで来たら、ログインボタンのある通知パネルを開いておく
+      if (store.adminHint && !store.admin) store.centerOpen = true;
+      // #ysg-<id> で来たらそこまで飛ぶ
+      const m = location.hash.match(/^#ysg-(\d+)$/);
+      if (!m) return;
+      const el = document.getElementById(`ysg-${m[1]}`);
+      if (!el) return;
+      el.scrollIntoView({ block: "center" });
+      el.classList.add("ysg-flash");
+      setTimeout(() => el.classList.remove("ysg-flash"), 2000);
+    });
+    return unwatch;
+  });
 </script>
 
 <div class="ysg" lang={store.lang}>
-	<div class="ysg-head">
-		<span class="ysg-count">{t.count(store.count)}</span>
-		<div class="ysg-tools">
-			{#if store.count > 1}
-				<select class="ysg-select" bind:value={store.sort} onchange={() => store.load(true)}>
-					{#each sorts as s (s)}<option value={s}>{t.sort[s]}</option>{/each}
-				</select>
-			{/if}
-			<button type="button" class="ysg-btn ysg-bell" class:ysg-active={store.centerOpen}
-				aria-expanded={store.centerOpen} onpointerenter={prefetchCenter} onfocus={prefetchCenter}
-				onclick={() => store.toggleCenter()}>
-				{t.notifications}
-				{#if store.unread > 0}<span class="ysg-badge">{store.unread}</span>{/if}
-			</button>
-		</div>
-	</div>
-	{#if store.centerOpen}
-		{#await loadCenter() then { default: Center }}
-			<Center {store} />
-		{:catch}
-			<p class="ysg-error">{t.failed}</p>
-		{/await}
-	{/if}
-	<Editor {store} />
-	{#if store.error}<p class="ysg-error">{store.error}</p>{/if}
-	<ul class="ysg-list">
-		{#each store.roots as c (c.id)}
-			<CommentItem {store} comment={c} />
-		{/each}
-	</ul>
-	{#if store.comments.length === 0 && !store.loading && !store.error}
-		<p class="ysg-empty">{t.noComments}</p>
-	{/if}
-	{#if store.hasMore}
-		<button type="button" class="ysg-btn ysg-more" disabled={store.loading} onclick={() => store.load(false)}>{t.loadMore}</button>
-	{/if}
+  <div class="ysg-head">
+    <span class="ysg-count">{t.count(store.count)}</span>
+    <div class="ysg-tools">
+      {#if store.count > 1}
+        <select
+          class="ysg-select"
+          bind:value={store.sort}
+          onchange={() => store.load(true)}
+        >
+          {#each sorts as s (s)}<option value={s}>{t.sort[s]}</option>{/each}
+        </select>
+      {/if}
+      <button
+        type="button"
+        class="ysg-btn ysg-bell"
+        class:ysg-active={store.centerOpen}
+        aria-expanded={store.centerOpen}
+        onpointerenter={prefetchCenter}
+        onfocus={prefetchCenter}
+        onclick={() => store.toggleCenter()}
+      >
+        {t.notifications}
+        {#if store.unread > 0}<span class="ysg-badge">{store.unread}</span>{/if}
+      </button>
+    </div>
+  </div>
+  {#if store.centerOpen}
+    {#await loadCenter() then { default: Center }}
+      <Center {store} />
+    {:catch}
+      <p class="ysg-error">{t.failed}</p>
+    {/await}
+  {/if}
+  <Editor {store} />
+  {#if store.error}<p class="ysg-error">{store.error}</p>{/if}
+  <ul class="ysg-list">
+    {#each store.roots as c (c.id)}
+      <CommentItem {store} comment={c} />
+    {/each}
+  </ul>
+  {#if store.comments.length === 0 && !store.loading && !store.error}
+    <p class="ysg-empty">{t.noComments}</p>
+  {/if}
+  {#if store.hasMore}
+    <button
+      type="button"
+      class="ysg-btn ysg-more"
+      disabled={store.loading}
+      onclick={() => store.load(false)}>{t.loadMore}</button
+    >
+  {/if}
 </div>
