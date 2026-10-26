@@ -26,7 +26,7 @@
     "nodemailer": "^10.2.1",
     "oxlint": "^1.89.0",
     "sanitize-html": "^2.18.1",
-    "svelte": "^5.57.2",
+    "svelte": "^5.57.3",
     "svelte-check": "^4.7.7",
     "typescript": "~6.0.3",
     "vite": "^8.3.5"
