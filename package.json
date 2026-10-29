@@ -23,7 +23,7 @@
     "@types/sanitize-html": "^2.16.2",
     "@typescript/native": "npm:typescript@7",
     "marked": "^18.1.2",
-    "nodemailer": "^10.2.1",
+    "nodemailer": "^10.3.0",
     "oxlint": "^1.90.0",
     "sanitize-html": "^2.18.1",
     "svelte": "^5.57.3",
