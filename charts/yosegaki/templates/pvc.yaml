@@ -1,5 +1,7 @@
 {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
 # コメントの本体。消すと全部消えるので Helm の削除に巻き込まない
+# バックアップは PVC ごとのスナップショットで取る (SQLite は WAL なので、そこから自分で立ち直る)。
+# danything のクラスタでは VolSync (danything/gitops の deploy/volsync/application.yaml)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
