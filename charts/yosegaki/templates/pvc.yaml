@@ -17,4 +17,9 @@ spec:
   resources:
     requests:
       storage: {{ .Values.persistence.size }}
+  {{- with .Values.persistence.dataSourceRef }}
+  # 作るときに中身を埋める元 (VolSync の populator など)。PVC の spec は作ったあと変えられないので、今ある PVC には効かない
+  dataSourceRef:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
