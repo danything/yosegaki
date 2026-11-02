@@ -91,6 +91,9 @@ persistence:
   storageClass: ""
   # 既存の PVC を使うならその名前
   existingClaim: ""
+  # 作るときに中身を埋める元 (例: VolSync の ReplicationDestination。
+  # {apiGroup: volsync.backube, kind: ReplicationDestination, name: yosegaki-db-dst})。今ある PVC には効かない
+  dataSourceRef: {}
 
 resources:
   requests:
