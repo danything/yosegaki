@@ -1,4 +1,4 @@
-FROM oven/bun:1.4.4-slim AS base
+FROM oven/bun:1.4.5-slim AS base
 WORKDIR /usr/src/app
 EXPOSE 3000
 
@@ -17,7 +17,7 @@ RUN mkdir -p /out/data
 # 実行時に要るのは build/ だけで、node_modules は入れない。
 # 実行はシェルもパッケージマネージャも無い distroless の Bun (glibc・CA 証明書・tzdata は入っている)。
 # uid は slim の bun ユーザーと同じ 1000:1000 のままにして、今の PVC をそのまま書けるようにする
-FROM oven/bun:1.4.4-distroless
+FROM oven/bun:1.4.5-distroless
 WORKDIR /usr/src/app
 EXPOSE 3000
 USER 1000:1000
